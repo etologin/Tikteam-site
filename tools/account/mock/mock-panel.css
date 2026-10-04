@@ -1,0 +1,16 @@
+.mock-panel {
+  position: fixed; right: 12px; bottom: 12px; z-index: 50; width: min(340px, calc(100vw - 24px));
+  padding: 12px; border-radius: 12px; border: 1px dashed #ffcf5c; background: #15120a; color: #fff3cf;
+  font-size: 13px; line-height: 1.4; box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+}
+.mock-panel summary { cursor: pointer; font-weight: 700; }
+.mock-panel:not([open]) { width: auto; padding: 8px 12px; }
+.mock-panel p { margin: 6px 0; color: #fff3cf; overflow-wrap: anywhere; }
+.mock-panel a { color: #ffcf5c; }
+.mock-panel__grid { display: flex; flex-wrap: wrap; gap: 6px; }
+.mock-panel__button {
+  font: inherit; font-size: 12px; cursor: pointer; padding: 6px 9px; border-radius: 8px;
+  border: 1px solid #6b5520; background: #241d0c; color: #fff3cf;
+}
+.mock-panel__button:hover { border-color: #ffcf5c; }
+@media (max-width: 760px) { .mock-panel { position: static; width: auto; margin: 16px; } }

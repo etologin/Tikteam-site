@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en" class="account-guard">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex">
+  <script src="../../assets/js/account/guard.js"></script>
+  <title>Your account — TikTeam</title>
+  <meta name="theme-color" content="#06070a">
+  <link rel="alternate" hreflang="ru" href="https://tikteam.live/account/">
+  <link rel="alternate" hreflang="en" href="https://tikteam.live/en/account/">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="64x64" href="../../assets/img/favicon-64.png">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Unbounded:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/site.css">
+  <link rel="stylesheet" href="../../assets/css/account.css">
+  <script type="module" src="../../assets/js/account/account-app.js"></script>
+</head>
+<body>
+  <header class="top">
+    <div class="wrap top__row">
+      <a class="brand" href="../" aria-label="TikTeam — home">
+        <img class="brand__mark" src="../../assets/img/mark.svg" width="36" height="36" alt="">
+        <span class="brand__name">Tik<span class="grad">Team</span></span>
+      </a>
+      <nav class="nav" aria-label="Sections">
+        <a href="../#modules">Modules</a>
+        <a href="../#pricing">Pricing</a>
+      </nav>
+      <a class="lang" href="../../account/" hreflang="ru" lang="ru" aria-label="Русская версия">RU</a>
+      <a class="btn btn--small btn--ghost" href="https://discord.gg/GgXkaWpMhS" target="_blank" rel="noopener">Discord</a>
+    </div>
+  </header>
+
+  <main class="account" id="main">
+    <div class="wrap account__body">
+      <h1>Your account</h1>
+      <p class="meta" id="mode-note"></p>
+      <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+
+      <section id="view-loading" class="card"><p>Loading your account…</p></section>
+
+      <section id="view-disabled" class="card" hidden>
+        <h2>The account area opens soon</h2>
+        <p>For now, manage your account, subscriptions and computers in the TikTeam app.</p>
+      </section>
+
+      <section id="view-unavailable" class="card" hidden>
+        <h2>The account server is unavailable</h2>
+        <p id="unavailable-text">Please try again a little later.</p>
+        <div class="actions"><button class="btn" type="button" id="retry">Try again</button></div>
+      </section>
+
+      <section id="view-auth" hidden>
+        <div class="tabs" role="tablist" aria-label="Sign in">
+          <button type="button" role="tab" id="tab-login" aria-controls="form-login" aria-selected="true">Sign in</button>
+          <button type="button" role="tab" id="tab-register" aria-controls="form-register" aria-selected="false">Create account</button>
+          <button type="button" role="tab" id="tab-forgot" aria-controls="form-forgot" aria-selected="false">Forgot password</button>
+        </div>
+
+        <form id="form-login" class="card form" role="tabpanel" aria-labelledby="tab-login" novalidate>
+          <div class="field"><label for="login-email">Email</label>
+            <input class="input" id="login-email" name="email" type="email" autocomplete="username" maxlength="254" required></div>
+          <div class="field"><label for="login-password">Password</label>
+            <div class="field__row"><input class="input" id="login-password" name="password" type="password" autocomplete="current-password" maxlength="128" required>
+              <button class="reveal" type="button" data-reveal="login-password" aria-pressed="false">Show</button></div></div>
+          <button class="btn" type="submit">Sign in</button>
+          <p class="hint">The same email and password as in the TikTeam app. Signing in here does not use a computer slot or stop your stream.</p>
+        </form>
+
+        <form id="form-register" class="card form" role="tabpanel" aria-labelledby="tab-register" novalidate hidden>
+          <div class="field"><label for="register-email">Email</label>
+            <input class="input" id="register-email" name="email" type="email" autocomplete="email" maxlength="254" required></div>
+          <div class="field"><label for="register-password">Password</label>
+            <div class="field__row"><input class="input" id="register-password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required>
+              <button class="reveal" type="button" data-reveal="register-password" aria-pressed="false">Show</button></div></div>
+          <div class="field"><label for="register-repeat">Repeat password</label>
+            <input class="input" id="register-repeat" name="repeat" type="password" autocomplete="new-password" maxlength="128" required></div>
+          <button class="btn" type="submit">Create account</button>
+          <p class="hint">8 to 128 characters. After registering, confirm your email from the link we send, then sign in.</p>
+        </form>
+
+        <form id="form-forgot" class="card form" role="tabpanel" aria-labelledby="tab-forgot" novalidate hidden>
+          <div class="field"><label for="forgot-email">Account email</label>
+            <input class="input" id="forgot-email" name="email" type="email" autocomplete="email" maxlength="254" required></div>
+          <button class="btn" type="submit">Send a link</button>
+          <p class="hint">The link to set a new password is valid for 15 minutes. A new password ends every session — on the website and in the app.</p>
+        </form>
+      </section>
+
+      <section id="view-dashboard" hidden>
+        <div class="account-grid">
+          <article class="card" id="card-profile">
+            <h2>Profile</h2>
+            <p>Email: <span class="value" id="profile-email"></span></p>
+            <p><span class="state" id="profile-confirmed"></span></p>
+            <div class="actions">
+              <button class="btn btn--small btn--ghost" type="button" id="resend-email" hidden>Send the email again</button>
+              <button class="btn btn--small btn--ghost" type="button" id="logout">Sign out of the website</button>
+            </div>
+            <p class="hint">Signing out of the website does not stop the app or your stream.</p>
+          </article>
+
+          <article class="card" id="card-billing">
+            <h2>Avatar Overlay subscription</h2>
+            <p><span class="state" id="billing-state"></span></p>
+            <p id="billing-dates"></p>
+            <p class="hint" id="billing-pending" hidden>The payment page was opened. Access appears once the server confirms the payment — press “Check payment” when you are done.</p>
+            <div class="actions">
+              <button class="btn btn--small" type="button" id="billing-checkout" hidden>Subscribe</button>
+              <button class="btn btn--small btn--ghost" type="button" id="billing-portal" hidden>Manage subscription</button>
+              <button class="btn btn--small btn--ghost" type="button" id="billing-check">Check payment</button>
+            </div>
+            <p class="hint">Other modules and packs are purchased in the app for now.</p>
+          </article>
+
+          <article class="card card--wide" id="card-modules">
+            <h2>Modules and packs</h2>
+            <ul class="rows" id="modules-list"></ul>
+            <h2 class="subhead" id="packs-title">Clip packs</h2>
+            <ul class="rows" id="packs-list"></ul>
+          </article>
+
+          <article class="card card--wide" id="card-devices">
+            <h2>Computers</h2>
+            <p id="devices-limit"></p>
+            <ul class="rows" id="devices-list"></ul>
+            <p class="hint">The website does not count as a computer. Removing a computer signs the app out there; your subscription stays.</p>
+          </article>
+
+          <article class="card card--wide" id="card-security">
+            <h2>Security</h2>
+            <p class="warn">Changing the password and “Sign out everywhere” end every session — on the website and in the app. A running stream will stop.</p>
+            <div class="split">
+              <form id="form-password" class="form" novalidate>
+                <div class="field"><label for="password-current">Current password</label>
+                  <input class="input" id="password-current" type="password" autocomplete="current-password" maxlength="128" required></div>
+                <div class="field"><label for="password-new">New password</label>
+                  <div class="field__row"><input class="input" id="password-new" type="password" autocomplete="new-password" minlength="8" maxlength="128" required>
+                    <button class="reveal" type="button" data-reveal="password-new" aria-pressed="false">Show</button></div></div>
+                <div class="field"><label for="password-repeat">Repeat new password</label>
+                  <input class="input" id="password-repeat" type="password" autocomplete="new-password" maxlength="128" required></div>
+                <button class="btn" type="submit">Change password</button>
+              </form>
+              <form id="form-logout-all" class="form" novalidate>
+                <div class="field"><label for="logout-all-password">Current password</label>
+                  <input class="input" id="logout-all-password" type="password" autocomplete="current-password" maxlength="128" required></div>
+                <button class="btn btn--danger" type="submit">Sign out everywhere</button>
+                <p class="hint">Ends the sessions on every computer and browser. Subscriptions and purchases stay.</p>
+              </form>
+            </div>
+          </article>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap foot__row">
+      <div class="foot__brand">
+        <span class="brand__name">Tik<span class="grad">Team</span></span>
+        <p>© 2026 TikTeam</p>
+        <p class="foot__links">
+          <a href="../terms/">Terms</a>
+          <a href="../refunds/">Refunds</a>
+          <a href="../privacy/">Privacy</a>
+          <a href="https://discord.gg/GgXkaWpMhS" target="_blank" rel="noopener">Discord</a>
+        </p>
+      </div>
+      <p class="foot__legal">TikTeam is an independent project and is not affiliated with TikTok, ByteDance, Kaspi.kz, DonationAlerts, Dotemu or the developers of supported games.
+        Game titles and trademarks belong to their respective owners.</p>
+    </div>
+  </footer>
+</body>
+</html>

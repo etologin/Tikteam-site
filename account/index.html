@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="ru" class="account-guard">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex">
+  <script src="../assets/js/account/guard.js"></script>
+  <title>Личный кабинет — TikTeam</title>
+  <meta name="theme-color" content="#06070a">
+  <link rel="alternate" hreflang="ru" href="https://tikteam.live/account/">
+  <link rel="alternate" hreflang="en" href="https://tikteam.live/en/account/">
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="64x64" href="../assets/img/favicon-64.png">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Unbounded:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <link rel="stylesheet" href="../assets/css/account.css">
+  <script type="module" src="../assets/js/account/account-app.js"></script>
+</head>
+<body>
+  <header class="top">
+    <div class="wrap top__row">
+      <a class="brand" href="../" aria-label="TikTeam — на главную">
+        <img class="brand__mark" src="../assets/img/mark.svg" width="36" height="36" alt="">
+        <span class="brand__name">Tik<span class="grad">Team</span></span>
+      </a>
+      <nav class="nav" aria-label="Разделы">
+        <a href="../#modules">Модули</a>
+        <a href="../#pricing">Цены</a>
+      </nav>
+      <a class="lang" href="../en/account/" hreflang="en" lang="en" aria-label="English version">EN</a>
+      <a class="btn btn--small btn--ghost" href="https://discord.gg/GgXkaWpMhS" target="_blank" rel="noopener">Discord</a>
+    </div>
+  </header>
+
+  <main class="account" id="main">
+    <div class="wrap account__body">
+      <h1>Личный кабинет</h1>
+      <p class="meta" id="mode-note"></p>
+      <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+
+      <section id="view-loading" class="card"><p>Загружаем кабинет…</p></section>
+
+      <section id="view-disabled" class="card" hidden>
+        <h2>Кабинет скоро откроется</h2>
+        <p>Пока аккаунт, подписки и компьютеры управляются в программе TikTeam.</p>
+      </section>
+
+      <section id="view-unavailable" class="card" hidden>
+        <h2>Сервер аккаунтов недоступен</h2>
+        <p id="unavailable-text">Попробуйте ещё раз немного позже.</p>
+        <div class="actions"><button class="btn" type="button" id="retry">Повторить</button></div>
+      </section>
+
+      <section id="view-auth" hidden>
+        <div class="tabs" role="tablist" aria-label="Вход в аккаунт">
+          <button type="button" role="tab" id="tab-login" aria-controls="form-login" aria-selected="true">Вход</button>
+          <button type="button" role="tab" id="tab-register" aria-controls="form-register" aria-selected="false">Регистрация</button>
+          <button type="button" role="tab" id="tab-forgot" aria-controls="form-forgot" aria-selected="false">Забыли пароль</button>
+        </div>
+
+        <form id="form-login" class="card form" role="tabpanel" aria-labelledby="tab-login" novalidate>
+          <div class="field"><label for="login-email">Email</label>
+            <input class="input" id="login-email" name="email" type="email" autocomplete="username" maxlength="254" required></div>
+          <div class="field"><label for="login-password">Пароль</label>
+            <div class="field__row"><input class="input" id="login-password" name="password" type="password" autocomplete="current-password" maxlength="128" required>
+              <button class="reveal" type="button" data-reveal="login-password" aria-pressed="false">Показать</button></div></div>
+          <button class="btn" type="submit">Войти</button>
+          <p class="hint">Тот же email и пароль, что в программе TikTeam. Вход на сайт не занимает место компьютера и не прерывает эфир.</p>
+        </form>
+
+        <form id="form-register" class="card form" role="tabpanel" aria-labelledby="tab-register" novalidate hidden>
+          <div class="field"><label for="register-email">Email</label>
+            <input class="input" id="register-email" name="email" type="email" autocomplete="email" maxlength="254" required></div>
+          <div class="field"><label for="register-password">Пароль</label>
+            <div class="field__row"><input class="input" id="register-password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required>
+              <button class="reveal" type="button" data-reveal="register-password" aria-pressed="false">Показать</button></div></div>
+          <div class="field"><label for="register-repeat">Повторите пароль</label>
+            <input class="input" id="register-repeat" name="repeat" type="password" autocomplete="new-password" maxlength="128" required></div>
+          <button class="btn" type="submit">Создать аккаунт</button>
+          <p class="hint">Пароль — от 8 до 128 символов. После регистрации подтвердите почту по ссылке из письма, затем войдите.</p>
+        </form>
+
+        <form id="form-forgot" class="card form" role="tabpanel" aria-labelledby="tab-forgot" novalidate hidden>
+          <div class="field"><label for="forgot-email">Email аккаунта</label>
+            <input class="input" id="forgot-email" name="email" type="email" autocomplete="email" maxlength="254" required></div>
+          <button class="btn" type="submit">Прислать ссылку</button>
+          <p class="hint">Ссылка для нового пароля действует 15 минут. Новый пароль завершит все сеансы — на сайте и в программе.</p>
+        </form>
+      </section>
+
+      <section id="view-dashboard" hidden>
+        <div class="account-grid">
+          <article class="card" id="card-profile">
+            <h2>Профиль</h2>
+            <p>Email: <span class="value" id="profile-email"></span></p>
+            <p><span class="state" id="profile-confirmed"></span></p>
+            <div class="actions">
+              <button class="btn btn--small btn--ghost" type="button" id="resend-email" hidden>Отправить письмо ещё раз</button>
+              <button class="btn btn--small btn--ghost" type="button" id="logout">Выйти с сайта</button>
+            </div>
+            <p class="hint">Выход с сайта не останавливает программу и эфир.</p>
+          </article>
+
+          <article class="card" id="card-billing">
+            <h2>Подписка Avatar Overlay</h2>
+            <p><span class="state" id="billing-state"></span></p>
+            <p id="billing-dates"></p>
+            <p class="hint" id="billing-pending" hidden>Оплата открыта. Права появятся после подтверждения платежа сервером — нажмите «Проверить оплату», когда закончите.</p>
+            <div class="actions">
+              <button class="btn btn--small" type="button" id="billing-checkout" hidden>Оформить подписку</button>
+              <button class="btn btn--small btn--ghost" type="button" id="billing-portal" hidden>Управлять подпиской</button>
+              <button class="btn btn--small btn--ghost" type="button" id="billing-check">Проверить оплату</button>
+            </div>
+            <p class="hint">Другие модули и паки пока оформляются в программе.</p>
+          </article>
+
+          <article class="card card--wide" id="card-modules">
+            <h2>Модули и паки</h2>
+            <ul class="rows" id="modules-list"></ul>
+            <h2 class="subhead" id="packs-title">Паки роликов</h2>
+            <ul class="rows" id="packs-list"></ul>
+          </article>
+
+          <article class="card card--wide" id="card-devices">
+            <h2>Компьютеры</h2>
+            <p id="devices-limit"></p>
+            <ul class="rows" id="devices-list"></ul>
+            <p class="hint">Сайт не считается компьютером. Удаление компьютера завершает его сеанс в программе, подписка остаётся.</p>
+          </article>
+
+          <article class="card card--wide" id="card-security">
+            <h2>Безопасность</h2>
+            <p class="warn">Смена пароля и «Выйти везде» завершают все сеансы — на сайте и в программе. Идущий эфир прервётся.</p>
+            <div class="split">
+              <form id="form-password" class="form" novalidate>
+                <div class="field"><label for="password-current">Текущий пароль</label>
+                  <input class="input" id="password-current" type="password" autocomplete="current-password" maxlength="128" required></div>
+                <div class="field"><label for="password-new">Новый пароль</label>
+                  <div class="field__row"><input class="input" id="password-new" type="password" autocomplete="new-password" minlength="8" maxlength="128" required>
+                    <button class="reveal" type="button" data-reveal="password-new" aria-pressed="false">Показать</button></div></div>
+                <div class="field"><label for="password-repeat">Повторите новый пароль</label>
+                  <input class="input" id="password-repeat" type="password" autocomplete="new-password" maxlength="128" required></div>
+                <button class="btn" type="submit">Сменить пароль</button>
+              </form>
+              <form id="form-logout-all" class="form" novalidate>
+                <div class="field"><label for="logout-all-password">Текущий пароль</label>
+                  <input class="input" id="logout-all-password" type="password" autocomplete="current-password" maxlength="128" required></div>
+                <button class="btn btn--danger" type="submit">Выйти везде</button>
+                <p class="hint">Завершит сеансы на всех компьютерах и в браузерах. Подписки и покупки сохранятся.</p>
+              </form>
+            </div>
+          </article>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap foot__row">
+      <div class="foot__brand">
+        <span class="brand__name">Tik<span class="grad">Team</span></span>
+        <p>© 2026 TikTeam</p>
+        <p class="foot__links">
+          <a href="../terms/">Условия</a>
+          <a href="../refunds/">Возвраты</a>
+          <a href="../privacy/">Конфиденциальность</a>
+          <a href="https://discord.gg/GgXkaWpMhS" target="_blank" rel="noopener">Discord</a>
+        </p>
+      </div>
+      <p class="foot__legal">TikTeam — независимый проект и не связан с TikTok, ByteDance, Kaspi.kz, DonationAlerts, Dotemu и разработчиками поддерживаемых игр.
+        Названия игр и товарные знаки принадлежат их владельцам.</p>
+    </div>
+  </footer>
+</body>
+</html>

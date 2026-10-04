@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ru" class="account-guard" data-recovery="1">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex">
+  <script src="../../assets/js/account/guard.js"></script>
+  <title>Восстановление доступа — TikTeam</title>
+  <meta name="theme-color" content="#06070a">
+  <link rel="icon" type="image/svg+xml" href="../../assets/img/favicon.svg">
+  <link rel="icon" type="image/png" sizes="64x64" href="../../assets/img/favicon-64.png">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Unbounded:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/site.css">
+  <link rel="stylesheet" href="../../assets/css/account.css">
+  <script type="module" src="../../assets/js/account/recovery-app.js"></script>
+</head>
+<body>
+  <header class="top">
+    <div class="wrap top__row">
+      <a class="brand" href="../../" aria-label="TikTeam — на главную">
+        <img class="brand__mark" src="../../assets/img/mark.svg" width="36" height="36" alt="">
+        <span class="brand__name">Tik<span class="grad">Team</span></span>
+      </a>
+      <a class="lang" href="../../en/account/recovery/" hreflang="en" lang="en" aria-label="English version">EN</a>
+    </div>
+  </header>
+
+  <main class="account" id="main">
+    <div class="wrap account__body">
+      <h1>Восстановление доступа</h1>
+      <p class="meta" id="mode-note"></p>
+      <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+
+      <section id="rec-loading" class="card"><p>Проверяем ссылку…</p></section>
+
+      <section id="rec-disabled" class="card" hidden>
+        <h2>Кабинет скоро откроется</h2>
+        <p>Пока восстановить доступ можно в программе TikTeam.</p>
+      </section>
+
+      <section id="rec-unavailable" class="card" hidden>
+        <h2>Сервер аккаунтов недоступен</h2>
+        <p>Ссылка из письма ещё действует какое-то время. Попробуйте ещё раз немного позже.</p>
+        <div class="actions"><button class="btn" type="button" id="retry">Повторить</button></div>
+      </section>
+
+      <section id="rec-missing" class="card" hidden>
+        <h2>Ссылка неполная</h2>
+        <p>Откройте ссылку из письма целиком. Если она не работает, запросите новую в кабинете.</p>
+        <div class="actions"><a class="btn" href="../">Перейти в кабинет</a></div>
+      </section>
+
+      <section id="rec-confirm" class="card" hidden>
+        <h2>Подтверждение почты</h2>
+        <p>Нажмите кнопку, чтобы подтвердить адрес почты аккаунта TikTeam. Ссылка действует 30 минут и срабатывает один раз.</p>
+        <div class="actions"><button class="btn" type="button" id="confirm-email">Подтвердить почту</button></div>
+      </section>
+
+      <form id="rec-reset" class="card form" novalidate hidden>
+        <h2>Новый пароль</h2>
+        <p class="warn">Новый пароль завершит все сеансы — на сайте и в программе. Идущий эфир прервётся.</p>
+        <div class="field"><label for="reset-password">Новый пароль</label>
+          <div class="field__row"><input class="input" id="reset-password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required>
+            <button class="reveal" type="button" data-reveal="reset-password" aria-pressed="false">Показать</button></div></div>
+        <div class="field"><label for="reset-repeat">Повторите пароль</label>
+          <input class="input" id="reset-repeat" type="password" autocomplete="new-password" maxlength="128" required></div>
+        <button class="btn" type="submit">Сохранить новый пароль</button>
+        <p class="hint">От 8 до 128 символов. Ссылка действует 15 минут и срабатывает один раз.</p>
+      </form>
+
+      <section id="rec-done" class="card" hidden>
+        <h2 id="done-title"></h2>
+        <p id="done-text"></p>
+        <div class="actions"><a class="btn" href="../">Войти в кабинет</a></div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap foot__row">
+      <div class="foot__brand">
+        <span class="brand__name">Tik<span class="grad">Team</span></span>
+        <p>© 2026 TikTeam</p>
+      </div>
+      <p class="foot__legal">TikTeam — независимый проект и не связан с TikTok, ByteDance, Kaspi.kz, DonationAlerts, Dotemu и разработчиками поддерживаемых игр.</p>
+    </div>
+  </footer>
+</body>
+</html>
