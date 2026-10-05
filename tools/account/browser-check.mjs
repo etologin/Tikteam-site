@@ -97,7 +97,7 @@ try {
   // Visitor: Google appears because the server's config says enabled; starting never navigates in mock.
   for (const [path, label] of [["/account/", "Войти через Google"], ["/en/account/", "Sign in with Google"]]) {
     await open(path);
-    const r = await run(`return { signin: visible('google-signin'), label: $('google-login').textContent, auth: visible('view-auth') };`);
+    const r = await run(`return { signin: visible('google-signin'), label: $('google-login').querySelector('.gsi-material-button-contents').textContent, auth: visible('view-auth') };`);
     check(r.auth && r.signin && r.label === label, `${path}: Google sign-in shown from the server's config`);
   }
   await open("/account/");

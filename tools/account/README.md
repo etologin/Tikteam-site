@@ -51,6 +51,13 @@ node tools/account/build.mjs --mode real --api-origin https://api.tikteam.live -
   же вкладке. Ссылка, билет и пароль нигде не сохраняются. После Google сервер возвращает
   браузер на `/account/`, и страница заново спрашивает сеанс и профиль: сам возврат
   ничего не доказывает. В демо-сборке переход отключён; завершение входа — в демо-панели.
+- **Оформление кнопок Google** — по
+  [правилам Google](https://developers.google.com/identity/branding-guidelines): разметка
+  и CSS `gsi-material-button` из их конфигуратора, светлая тема, форма «пилюля», логотип «G»
+  их же контурами и цветами, шрифт Google Sans Medium 14/20 из Google Fonts. Тексты —
+  разрешённые варианты: «Войти через Google» / “Sign in with Google” и для привязки
+  «Продолжить с Google» / “Continue with Google”. Встроенные стили образца перенесены
+  в `account.css` (CSP запрещает inline). Логотип не перерисовывать и не перекрашивать.
 
 ## Тесты
 

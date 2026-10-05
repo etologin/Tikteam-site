@@ -86,6 +86,33 @@ test("Google: the website start only, no poll loop, no Google SDK, hidden until 
   }
 });
 
+test("Google buttons follow Google's branding: official G, light pill, Google Sans, allowed texts", () => {
+  // The "G" exactly as Google's Sign in with Google configurator renders it; never recoloured or redrawn.
+  const G = [
+    ["#EA4335", "M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"],
+    ["#4285F4", "M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"],
+    ["#FBBC05", "M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"],
+    ["#34A853", "M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"],
+  ];
+  for (const [page, texts] of [["account/index.html", ["Войти через Google", "Продолжить с Google"]], ["en/account/index.html", ["Sign in with Google", "Continue with Google"]]]) {
+    const html = readFileSync(join(SITE, page), "utf8");
+    const buttons = [...html.matchAll(/<button class="gsi-material-button light-mode pill"[\s\S]*?<\/button>/g)].map((m) => m[0]);
+    assert.equal(buttons.length, 2, page + ": sign-in and link buttons");
+    assert.match(buttons[0], /id="google-login"/, page);
+    assert.match(buttons[1], /type="submit"/, page + ": the link form submits through the Google button");
+    buttons.forEach((button, i) => {
+      for (const [fill, d] of G) assert.ok(button.includes(`<path fill="${fill}" d="${d}"></path>`), `${page}: ${fill} path of the G`);
+      assert.match(button, /<svg viewBox="0 0 48 48" aria-hidden="true" focusable="false">/, page);
+      assert.ok(button.includes(`<span class="gsi-material-button-contents">${texts[i]}</span>`), `${page}: ${texts[i]}`);
+    });
+    assert.match(html, /fonts\.googleapis\.com\/css2\?family=Google\+Sans:wght@500&/, page + ": Google Sans Medium for the button text");
+  }
+  const css = readFileSync(join(SITE, "assets", "css", "account.css"), "utf8");
+  for (const rule of ["border: 1px solid #747775", "color: #1f1f1f", "height: 40px", ".gsi-material-button.pill { border-radius: 20px; }",
+    "margin-right: 12px; min-width: 20px; width: 20px", "font-family: \"Google Sans\""])
+    assert.ok(css.includes(rule), "official button CSS: " + rule);
+});
+
 test("confirmation first: the profile is read alone, a refusal keeps the session", () => {
   const app = readFileSync(join(JS_DIR, "account-app.js"), "utf8");
   const load = app.slice(app.indexOf("async function loadDashboard"), app.indexOf("async function loadGoogleConfig"));
