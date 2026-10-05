@@ -1,7 +1,9 @@
-// Strict checks for the two URLs the server hands out. Anything else is refused,
+// Strict checks for the URLs the server hands out. Anything else is refused,
 // including look-alike hosts, user info, explicit ports, extra query or fragments.
 
 const PORTAL_HOST = "sandbox-customer-portal.paddle.com";
+const GOOGLE_BRIDGE = "/auth/google/";
+const GOOGLE_TICKET = /^[0-9A-Fa-f]{64}$/;
 
 function parse(value) {
   if (typeof value !== "string" || value.length < 1 || value.length > 8192 || value !== value.trim()) return null;
@@ -20,6 +22,23 @@ export function checkoutUrl(value, checkoutOrigin) {
   if (url.protocol !== "https:" || url.username || url.password || url.port) return null;
   if (url.origin !== checkoutOrigin || url.pathname !== "/billing/checkout" || url.search) return null;
   if (url.hash.length < 2 || !/^#[A-Za-z0-9._~=&%-]{1,4096}$/.test(url.hash)) return null;
+  return url;
+}
+
+/**
+ * Google sign-in start from POST /auth/google/start: exactly the API's own bridge page
+ * `/auth/google/` with a one-time ticket of 64 hex digits in the fragment, which the
+ * bridge removes at once. No query, user info, port, other path or other origin.
+ * @param {unknown} value server response field
+ * @param {string} apiOrigin exact API origin of this build, e.g. https://api.tikteam.live
+ */
+export function googleStartUrl(value, apiOrigin) {
+  if (typeof apiOrigin !== "string" || !/^https:\/\/[a-z0-9.-]+$/.test(apiOrigin)) return null;
+  const prefix = apiOrigin + GOOGLE_BRIDGE + "#";
+  if (typeof value !== "string" || !value.startsWith(prefix) || !GOOGLE_TICKET.test(value.slice(prefix.length))) return null;
+  const url = parse(value);
+  if (!url || url.protocol !== "https:" || url.origin !== apiOrigin || url.username || url.password || url.port) return null;
+  if (url.pathname !== GOOGLE_BRIDGE || url.search || url.href !== value) return null;
   return url;
 }
 

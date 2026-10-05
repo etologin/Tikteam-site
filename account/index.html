@@ -54,6 +54,14 @@
       </section>
 
       <section id="view-auth" hidden>
+        <div id="google-signin" hidden>
+          <div class="card google-box">
+            <button class="btn btn--google" type="button" id="google-login">Войти через Google</button>
+            <p class="hint">Для входа и для нового аккаунта. Если этот email уже зарегистрирован с паролем, войдите с паролем и привяжите Google в кабинете.</p>
+          </div>
+          <p class="or"><span>или по email</span></p>
+        </div>
+
         <div class="tabs" role="tablist" aria-label="Вход в аккаунт">
           <button type="button" role="tab" id="tab-login" aria-controls="form-login" aria-selected="true">Вход</button>
           <button type="button" role="tab" id="tab-register" aria-controls="form-register" aria-selected="false">Регистрация</button>
@@ -96,8 +104,11 @@
             <h2>Профиль</h2>
             <p>Email: <span class="value" id="profile-email"></span></p>
             <p><span class="state" id="profile-confirmed"></span></p>
+            <p id="profile-unconfirmed" hidden>Подтвердите почту по ссылке из письма. До подтверждения функции TikTeam и оплата недоступны.</p>
             <div class="actions">
-              <button class="btn btn--small btn--ghost" type="button" id="resend-email" hidden>Отправить письмо ещё раз</button>
+              <button class="btn btn--small" type="button" id="resend-email" hidden>Отправить письмо ещё раз</button>
+              <button class="btn btn--small btn--ghost" type="button" id="profile-recheck" hidden>Обновить статус</button>
+              <button class="btn btn--small btn--ghost" type="button" id="profile-recovery" hidden>Прислать ссылку для нового пароля</button>
               <button class="btn btn--small btn--ghost" type="button" id="logout">Выйти с сайта</button>
             </div>
             <p class="hint">Выход с сайта не останавливает программу и эфир.</p>
@@ -127,29 +138,49 @@
             <h2>Компьютеры</h2>
             <p id="devices-limit"></p>
             <ul class="rows" id="devices-list"></ul>
+            <p class="hint" id="devices-need-password" hidden>Чтобы удалить компьютер, сначала задайте пароль в разделе «Безопасность».</p>
             <p class="hint">Сайт не считается компьютером. Удаление компьютера завершает его сеанс в программе, подписка остаётся.</p>
+          </article>
+
+          <article class="card card--wide" id="card-google" hidden>
+            <h2>Вход через Google</h2>
+            <p id="google-only" hidden>Вы входите через Google, пароля у аккаунта пока нет. Задать его можно в разделе «Безопасность».</p>
+            <form id="form-google-link" class="form" novalidate>
+              <p>Привяжите Google, чтобы входить без пароля. В Google выберите тот же адрес, что у этого аккаунта. Одинаковый адрес сам ничего не привязывает — нужен текущий пароль.</p>
+              <div class="field"><label for="google-link-password">Текущий пароль</label>
+                <input class="input" id="google-link-password" type="password" autocomplete="current-password" maxlength="128" required></div>
+              <button class="btn" type="submit">Привязать Google</button>
+              <p class="hint">Откроется страница Google, затем подтверждение на сервере TikTeam. После возврата кабинет заново проверит вход.</p>
+            </form>
           </article>
 
           <article class="card card--wide" id="card-security">
             <h2>Безопасность</h2>
-            <p class="warn">Смена пароля и «Выйти везде» завершают все сеансы — на сайте и в программе. Идущий эфир прервётся.</p>
-            <div class="split">
-              <form id="form-password" class="form" novalidate>
-                <div class="field"><label for="password-current">Текущий пароль</label>
-                  <input class="input" id="password-current" type="password" autocomplete="current-password" maxlength="128" required></div>
-                <div class="field"><label for="password-new">Новый пароль</label>
-                  <div class="field__row"><input class="input" id="password-new" type="password" autocomplete="new-password" minlength="8" maxlength="128" required>
-                    <button class="reveal" type="button" data-reveal="password-new" aria-pressed="false">Показать</button></div></div>
-                <div class="field"><label for="password-repeat">Повторите новый пароль</label>
-                  <input class="input" id="password-repeat" type="password" autocomplete="new-password" maxlength="128" required></div>
-                <button class="btn" type="submit">Сменить пароль</button>
-              </form>
-              <form id="form-logout-all" class="form" novalidate>
-                <div class="field"><label for="logout-all-password">Текущий пароль</label>
-                  <input class="input" id="logout-all-password" type="password" autocomplete="current-password" maxlength="128" required></div>
-                <button class="btn btn--danger" type="submit">Выйти везде</button>
-                <p class="hint">Завершит сеансы на всех компьютерах и в браузерах. Подписки и покупки сохранятся.</p>
-              </form>
+            <div id="security-no-password" hidden>
+              <p>У аккаунта нет пароля — вы входите через Google. Пароль понадобится, чтобы выйти везде или удалить компьютер.</p>
+              <p class="warn">Пароль задаётся по ссылке из письма. После этого все сеансы завершатся — на сайте и в программе, идущий эфир прервётся.</p>
+              <div class="actions"><button class="btn btn--small" type="button" id="set-password">Прислать ссылку, чтобы задать пароль</button></div>
+            </div>
+            <div id="security-forms">
+              <p class="warn">Смена пароля и «Выйти везде» завершают все сеансы — на сайте и в программе. Идущий эфир прервётся.</p>
+              <div class="split">
+                <form id="form-password" class="form" novalidate>
+                  <div class="field"><label for="password-current">Текущий пароль</label>
+                    <input class="input" id="password-current" type="password" autocomplete="current-password" maxlength="128" required></div>
+                  <div class="field"><label for="password-new">Новый пароль</label>
+                    <div class="field__row"><input class="input" id="password-new" type="password" autocomplete="new-password" minlength="8" maxlength="128" required>
+                      <button class="reveal" type="button" data-reveal="password-new" aria-pressed="false">Показать</button></div></div>
+                  <div class="field"><label for="password-repeat">Повторите новый пароль</label>
+                    <input class="input" id="password-repeat" type="password" autocomplete="new-password" maxlength="128" required></div>
+                  <button class="btn" type="submit">Сменить пароль</button>
+                </form>
+                <form id="form-logout-all" class="form" novalidate>
+                  <div class="field"><label for="logout-all-password">Текущий пароль</label>
+                    <input class="input" id="logout-all-password" type="password" autocomplete="current-password" maxlength="128" required></div>
+                  <button class="btn btn--danger" type="submit">Выйти везде</button>
+                  <p class="hint">Завершит сеансы на всех компьютерах и в браузерах. Подписки и покупки сохранятся.</p>
+                </form>
+              </div>
             </div>
           </article>
         </div>

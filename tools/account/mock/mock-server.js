@@ -1,21 +1,28 @@
 // In-memory stand-in for the account API (/api/web/v1), used only by mock builds and tests.
 // It follows the server contract closely enough to exercise the real client code path:
 // CSRF bound to the signed-in principal, strict JSON fields, the documented error codes,
-// one-time recovery codes, pending payments that grant nothing until a server check.
+// one-time recovery codes, pending payments that grant nothing until a server check,
+// features closed until the email is confirmed, and Google sign-in up to the API's bridge.
 // No real network, provider, mail or money is involved. Never shipped in real builds.
 
 export const MOCK_API_ORIGIN = "https://api.mock.invalid";
 export const MOCK_API_BASE = MOCK_API_ORIGIN + "/api/web/v1";
 export const DEMO = Object.freeze({ email: "demo@tikteam.test", password: "demo-pass-2026" });
+/** The address the demo "Google" reports unless a test picks another one. */
+export const GOOGLE_DEMO_EMAIL = "google.demo@tikteam.test";
 
 const MINUTE = 60_000;
 const IDLE = 30 * MINUTE, ABSOLUTE = 12 * 60 * MINUTE;
 const LINK_LIFETIME = { reset: 15 * MINUTE, confirm: 30 * MINUTE };
+const GOOGLE_FLOW = 5 * MINUTE;
+const UNCONFIRMED = "Подтвердите почту. До подтверждения функции TikTeam и оплата недоступны.";
 
 function random(bytes = 24) {
   const raw = crypto.getRandomValues(new Uint8Array(bytes));
   return btoa(String.fromCharCode(...raw)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
+// The server's begin ticket is Convert.ToHexString: 64 upper-case hex digits.
+const hexTicket = () => Array.from(crypto.getRandomValues(new Uint8Array(32)), (n) => n.toString(16).padStart(2, "0")).join("").toUpperCase();
 const encodeEmail = (email) => btoa(unescape(encodeURIComponent(email))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 function decodeEmail(value) {
   try { return decodeURIComponent(escape(atob(value.replace(/-/g, "+").replace(/_/g, "/")))); } catch { return null; }
@@ -29,12 +36,15 @@ export function createMockServer({ now = () => Date.now() } = {}) {
   const outbox = [];
   let outage = null;            // null | "network" | "502"
   let rateLimitSeconds = null;  // next request answers 429
+  let googleEnabled = true;     // GET /auth/google/config
+  let googleFlow = null;        // the one pending Google start in this demo
   const log = [];               // request log for tests (paths only)
 
+  /** password null = an account created through Google, which has no password yet. */
   function addUser(email, password, extra = {}) {
     const created = now();
     users.set(email, {
-      email, password, confirmed: false, stamp: random(8),
+      email, password, confirmed: false, stamp: random(8), google: null,
       modules: {
         "sor4": { name: "Streets of Rage 4", active: true, paidUntil: null },   // manual test access
         "dead-as-disco": { name: "Dead as Disco", active: false, paidUntil: null },
@@ -51,7 +61,7 @@ export function createMockServer({ now = () => Date.now() } = {}) {
       ...extra,
     });
   }
-  addUser(DEMO.email, DEMO.password);
+  addUser(DEMO.email, DEMO.password, { confirmed: true });
 
   /* ---------- helpers ---------- */
 
@@ -62,6 +72,7 @@ export function createMockServer({ now = () => Date.now() } = {}) {
     return new Response(JSON.stringify(body), { status, headers });
   }
   const fail = (status, code, message, headers) => respond(status, { code, message }, headers);
+  const notFound = () => new Response("Not Found", { status: 404, headers: { "Content-Type": "text/plain" } });
 
   function session(credentials) {
     if (credentials !== "include" || !cookie) return null;
@@ -73,6 +84,12 @@ export function createMockServer({ now = () => Date.now() } = {}) {
   }
   function principal(credentials) { return session(credentials)?.email ?? "anon"; }
   function rotateCsrf(owner) { csrf = { token: random(), principal: owner }; }
+  /** A new browser session for this account; the old token belongs to someone else now. */
+  function signIn(target) {
+    const time = now();
+    cookie = { email: target.email, stamp: target.stamp, idleUntil: time + IDLE, absoluteUntil: time + ABSOLUTE };
+    rotateCsrf(target.email);
+  }
   function revokeEverything(user) {
     user.stamp = random(8);
     for (const device of user.devices) device.hasActiveSession = false;
@@ -105,12 +122,20 @@ export function createMockServer({ now = () => Date.now() } = {}) {
     };
   }
   function account(user) {
+    const hasPassword = user.password !== null;
+    // Before confirmation the server shows no module or pack at all, free or paid.
+    if (!user.confirmed) return { email: user.email, emailConfirmed: false, modules: [], packs: [], hasPassword };
     const avatar = user.modules["avatar-overlay"].active;
     return {
-      email: user.email, emailConfirmed: user.confirmed,
+      email: user.email, emailConfirmed: true, hasPassword,
       modules: Object.entries(user.modules).map(([id, m]) => ({ id, name: m.name, active: m.active, paidUntil: m.paidUntil, status: m.active ? "active" : "inactive" })),
       packs: user.packs.map((p) => ({ id: p.id, owned: p.owned, canPlay: avatar })),
     };
+  }
+  function startGoogle(previous) {
+    const ticket = hexTicket();
+    googleFlow = { ticket, previous: previous ? { email: previous.email, stamp: previous.stamp } : null, expiresAt: now() + GOOGLE_FLOW };
+    return { url: `${MOCK_API_ORIGIN}/auth/google/#${ticket}`, pollToken: null, expiresAt: new Date(googleFlow.expiresAt).toISOString() };
   }
   const validEmail = (value) => typeof value === "string" && value.length <= 254 && /^[^\s@]+@[^\s@]+$/.test(value);
   const validPassword = (value) => typeof value === "string" && value.length >= 8 && value.length <= 128;
@@ -137,15 +162,20 @@ export function createMockServer({ now = () => Date.now() } = {}) {
       });
     }
     if (method === "GET") {
+      if (path === "/auth/google/config") return respond(200, { enabled: googleEnabled });
+      if (!["/account", "/account/devices", "/billing/status"].includes(path)) return notFound();
       const user = session(credentials);
-      if (path === "/account") return user ? respond(200, account(user)) : fail(401, "session_expired", "Сеанс завершён.");
-      if (path === "/account/devices") return user
-        ? respond(200, { devices: user.devices.map((d) => ({ ...d, isCurrent: false })), limit: 2 })
-        : fail(401, "session_expired", "Сеанс завершён.");
-      if (path === "/billing/status") return user ? respond(200, billingStatus(user)) : fail(401, "session_expired", "Сеанс завершён.");
-      return new Response("Not Found", { status: 404, headers: { "Content-Type": "text/plain" } });
+      if (!user) return fail(401, "session_expired", "Сеанс завершён.");
+      // The profile is the one page an unconfirmed account may read.
+      if (path === "/account") return respond(200, account(user));
+      if (!user.confirmed) return fail(403, "email_unconfirmed", UNCONFIRMED);
+      // Web answers never mark a computer as current: the browser is not one.
+      if (path === "/account/devices") return respond(200, { devices: user.devices.map((d) => ({ ...d })), limit: 2 });
+      return respond(200, billingStatus(user));
     }
     if (method !== "POST") return new Response("Method Not Allowed", { status: 405 });
+    // Without Google configured the start route does not exist at all.
+    if (path === "/auth/google/start" && !googleEnabled) return notFound();
 
     // Every POST: JSON and the CSRF token issued for the current principal.
     const headers = new Headers(init.headers);
@@ -155,6 +185,7 @@ export function createMockServer({ now = () => Date.now() } = {}) {
     const raw = init.body;
     const user = session(credentials);
     const needUser = () => fail(401, "session_expired", "Сеанс завершён.");
+    const needConfirmed = () => fail(403, "email_unconfirmed", UNCONFIRMED);
 
     switch (path) {
       case "/auth/register": {
@@ -170,11 +201,23 @@ export function createMockServer({ now = () => Date.now() } = {}) {
         if (!b || typeof b.email !== "string" || typeof b.password !== "string") return fail(400, "invalid_request", "Неверный запрос.");
         if (user) return fail(409, "logout_required", "Сначала выйдите.");
         const target = users.get(b.email.trim().toLowerCase());
-        if (!target || target.password !== b.password) return fail(401, "invalid_credentials", "Неверный email или пароль.");
-        const time = now();
-        cookie = { email: target.email, stamp: target.stamp, idleUntil: time + IDLE, absoluteUntil: time + ABSOLUTE };
-        rotateCsrf(target.email);
+        // A Google-only account has no password: nothing matches it.
+        if (!target || target.password === null || target.password !== b.password) return fail(401, "invalid_credentials", "Неверный email или пароль.");
+        signIn(target);
         return respond(200, { authenticated: true, expiresAt: new Date(cookie.idleUntil).toISOString() });
+      }
+      case "/auth/google/start": {
+        // {} signs a visitor in; {currentPassword} links Google to the signed-in account.
+        const b = body(raw, []) ?? body(raw, ["currentPassword"]);
+        if (!b) return fail(400, "invalid_request", "Неверный запрос.");
+        const password = b.currentPassword ?? null;
+        if (!user) return password === null ? respond(200, startGoogle(null)) : fail(400, "invalid_request", "Неверный запрос.");
+        if (typeof password !== "string" || password.length < 1 || password.length > 128)
+          return fail(409, "logout_required", "Сначала выйдите из текущего аккаунта и повторите вход через Google.");
+        if (!user.confirmed) return needConfirmed();
+        // The start route reports a wrong password as invalid_credentials, like sign-in.
+        if (user.password === null || user.password !== password) return fail(403, "invalid_credentials", "Неверный пароль.");
+        return respond(200, startGoogle(user));
       }
       case "/auth/logout": {
         if (!body(raw, [])) return fail(400, "invalid_request", "Неверный запрос.");
@@ -185,7 +228,8 @@ export function createMockServer({ now = () => Date.now() } = {}) {
         const b = body(raw, ["currentPassword"]);
         if (!b) return fail(400, "invalid_request", "Неверный запрос.");
         if (!user) return needUser();
-        if (user.password !== b.currentPassword) return fail(403, "current_password_invalid", "Текущий пароль неверен.");
+        if (!user.confirmed) return needConfirmed();
+        if (user.password === null || user.password !== b.currentPassword) return fail(403, "current_password_invalid", "Текущий пароль неверен.");
         revokeEverything(user); rotateCsrf("anon");
         return respond(204);
       }
@@ -193,7 +237,8 @@ export function createMockServer({ now = () => Date.now() } = {}) {
         const b = body(raw, ["currentPassword", "newPassword"]);
         if (!b) return fail(400, "invalid_request", "Неверный запрос.");
         if (!user) return needUser();
-        if (user.password !== b.currentPassword) return fail(403, "current_password_invalid", "Текущий пароль неверен.");
+        if (!user.confirmed) return needConfirmed();
+        if (user.password === null || user.password !== b.currentPassword) return fail(403, "current_password_invalid", "Текущий пароль неверен.");
         if (!validPassword(b.newPassword) || b.newPassword === b.currentPassword) return fail(400, "password_invalid", "Пароль 8–128 символов.");
         user.password = b.newPassword; revokeEverything(user); rotateCsrf("anon");
         return respond(204);
@@ -234,6 +279,7 @@ export function createMockServer({ now = () => Date.now() } = {}) {
       case "/billing/check": {
         if (!body(raw, [])) return fail(400, "invalid_request", "Неверный запрос.");
         if (!user) return needUser();
+        if (!user.confirmed) return needConfirmed();
         const b = user.billing;
         // Only the provider's confirmation (simulated by the panel) grants anything.
         if (b.pending && b.providerPaid) {
@@ -247,6 +293,7 @@ export function createMockServer({ now = () => Date.now() } = {}) {
         const b = body(raw, ["moduleId"]);
         if (!b || b.moduleId !== "avatar-overlay") return fail(400, "invalid_request", "Оплата этого модуля не настроена.");
         if (!user) return needUser();
+        if (!user.confirmed) return needConfirmed();
         if (!user.billing.enabled || user.billing.active) return fail(409, "billing_unavailable", "Оплата недоступна.");
         // A repeated click reopens the same pending purchase; it never creates a second one.
         if (!user.billing.pending) { user.billing.pending = true; user.billing.checkouts++; }
@@ -255,6 +302,7 @@ export function createMockServer({ now = () => Date.now() } = {}) {
       case "/billing/portal": {
         if (!body(raw, [])) return fail(400, "invalid_request", "Неверный запрос.");
         if (!user) return needUser();
+        if (!user.confirmed) return needConfirmed();
         if (!user.billing.enabled || !user.billing.customer) return fail(409, "billing_unavailable", "Управление станет доступно после первой оплаты.");
         const id = Array.from(crypto.getRandomValues(new Uint8Array(26)), (n) => "abcdefghijklmnopqrstuvwxyz0123456789"[n % 36]).join("");
         return respond(200, { url: `https://sandbox-customer-portal.paddle.com/cpl_${id}?action=overview&token=pga_${random(24)}` });
@@ -265,7 +313,8 @@ export function createMockServer({ now = () => Date.now() } = {}) {
           const b = body(raw, ["currentPassword"]);
           if (!b) return fail(400, "invalid_request", "Неверный запрос.");
           if (!user) return needUser();
-          if (user.password !== b.currentPassword) return fail(403, "current_password_invalid", "Текущий пароль неверен.");
+          if (!user.confirmed) return needConfirmed();
+          if (user.password === null || user.password !== b.currentPassword) return fail(403, "current_password_invalid", "Текущий пароль неверен.");
           const id = decodeURIComponent(remove[1]);
           const index = user.devices.findIndex((d) => d.id === id);
           // Same answer for someone else's and a missing computer.
@@ -273,9 +322,41 @@ export function createMockServer({ now = () => Date.now() } = {}) {
           user.devices.splice(index, 1);
           return respond(204);
         }
-        return new Response("Not Found", { status: 404, headers: { "Content-Type": "text/plain" } });
+        return notFound();
       }
     }
+  }
+
+  /**
+   * What the API's own bridge pages do after Google: the visitor picked a Google account
+   * (`email`) and pressed the confirmation button there. Returns the outcome code; on success
+   * the browser holds a new session, exactly as after the real redirect back to /account/.
+   */
+  function completeGoogle({ email } = {}) {
+    const flow = googleFlow;
+    googleFlow = null;
+    if (!flow || now() >= flow.expiresAt) return "google_flow_expired";
+    if (flow.previous) {
+      // Linking: still the same signed-in session, and Google reports this account's own address.
+      const target = users.get(flow.previous.email);
+      if (!target || target.stamp !== flow.previous.stamp || cookie?.email !== target.email || !target.confirmed) return "session_expired";
+      const address = email ?? target.email;
+      const owner = [...users.values()].find((u) => u.google === address);
+      if (address !== target.email || (owner && owner !== target)) return "google_link_conflict";
+      target.google = address;
+      signIn(target);
+      return "linked";
+    }
+    const address = email ?? GOOGLE_DEMO_EMAIL;
+    // An account opened in this browser during the round trip is never replaced silently.
+    if (session("include")) return "logout_required";
+    const linked = [...users.values()].find((u) => u.google === address);
+    if (linked) { signIn(linked); return "signed_in"; }
+    // The same address with a password is not a link: sign in with the password, then link.
+    if (users.has(address)) return "google_link_required";
+    addUser(address, null, { confirmed: true, google: address });
+    signIn(users.get(address));
+    return "created";
   }
 
   async function transport(url, init = {}) {
@@ -302,12 +383,19 @@ export function createMockServer({ now = () => Date.now() } = {}) {
       outbox,
       lastLink(purpose) { return [...outbox].reverse().find((m) => m.purpose === purpose)?.fragment ?? null; },
       issueLink(purpose, email = DEMO.email) { return issueLink(purpose, email); },
+      /** Address of the account signed in to this browser, if any. */
+      currentEmail() { return cookie && users.get(cookie.email)?.stamp === cookie.stamp ? cookie.email : null; },
       expireSession() { cookie = null; },
       setOutage(kind) { outage = kind; },
       get outage() { return outage; },
       rateLimitNext(seconds) { rateLimitSeconds = seconds; },
       completePayment(email = DEMO.email) { const user = users.get(email); if (user?.billing.pending) user.billing.providerPaid = true; return !!user?.billing.pending; },
       setBillingEnabled(enabled, email = DEMO.email) { users.get(email).billing.enabled = enabled; },
+      setConfirmed(confirmed, email = DEMO.email) { users.get(email).confirmed = confirmed; },
+      setGoogleEnabled(enabled) { googleEnabled = enabled; if (!enabled) googleFlow = null; },
+      get googleEnabled() { return googleEnabled; },
+      get googlePending() { return googleFlow !== null; },
+      completeGoogle,
       currentCsrf() { return csrf.token; },
     },
   };

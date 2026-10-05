@@ -54,6 +54,14 @@
       </section>
 
       <section id="view-auth" hidden>
+        <div id="google-signin" hidden>
+          <div class="card google-box">
+            <button class="btn btn--google" type="button" id="google-login">Sign in with Google</button>
+            <p class="hint">Works for signing in and for a new account. If this email is already registered with a password, sign in with the password and link Google in your account.</p>
+          </div>
+          <p class="or"><span>or with email</span></p>
+        </div>
+
         <div class="tabs" role="tablist" aria-label="Sign in">
           <button type="button" role="tab" id="tab-login" aria-controls="form-login" aria-selected="true">Sign in</button>
           <button type="button" role="tab" id="tab-register" aria-controls="form-register" aria-selected="false">Create account</button>
@@ -96,8 +104,11 @@
             <h2>Profile</h2>
             <p>Email: <span class="value" id="profile-email"></span></p>
             <p><span class="state" id="profile-confirmed"></span></p>
+            <p id="profile-unconfirmed" hidden>Confirm your email from the link in the letter. Until then TikTeam features and payments are unavailable.</p>
             <div class="actions">
-              <button class="btn btn--small btn--ghost" type="button" id="resend-email" hidden>Send the email again</button>
+              <button class="btn btn--small" type="button" id="resend-email" hidden>Send the email again</button>
+              <button class="btn btn--small btn--ghost" type="button" id="profile-recheck" hidden>Refresh status</button>
+              <button class="btn btn--small btn--ghost" type="button" id="profile-recovery" hidden>Email me a link for a new password</button>
               <button class="btn btn--small btn--ghost" type="button" id="logout">Sign out of the website</button>
             </div>
             <p class="hint">Signing out of the website does not stop the app or your stream.</p>
@@ -127,29 +138,49 @@
             <h2>Computers</h2>
             <p id="devices-limit"></p>
             <ul class="rows" id="devices-list"></ul>
+            <p class="hint" id="devices-need-password" hidden>To remove a computer, first set a password under “Security”.</p>
             <p class="hint">The website does not count as a computer. Removing a computer signs the app out there; your subscription stays.</p>
+          </article>
+
+          <article class="card card--wide" id="card-google" hidden>
+            <h2>Sign in with Google</h2>
+            <p id="google-only" hidden>You sign in with Google; the account has no password yet. You can set one under “Security”.</p>
+            <form id="form-google-link" class="form" novalidate>
+              <p>Link Google to sign in without a password. In Google, choose the same address as this account. A matching address alone links nothing — your current password is needed.</p>
+              <div class="field"><label for="google-link-password">Current password</label>
+                <input class="input" id="google-link-password" type="password" autocomplete="current-password" maxlength="128" required></div>
+              <button class="btn" type="submit">Link Google</button>
+              <p class="hint">The Google page opens, then a confirmation on the TikTeam server. When you are back, the account page checks the sign-in again.</p>
+            </form>
           </article>
 
           <article class="card card--wide" id="card-security">
             <h2>Security</h2>
-            <p class="warn">Changing the password and “Sign out everywhere” end every session — on the website and in the app. A running stream will stop.</p>
-            <div class="split">
-              <form id="form-password" class="form" novalidate>
-                <div class="field"><label for="password-current">Current password</label>
-                  <input class="input" id="password-current" type="password" autocomplete="current-password" maxlength="128" required></div>
-                <div class="field"><label for="password-new">New password</label>
-                  <div class="field__row"><input class="input" id="password-new" type="password" autocomplete="new-password" minlength="8" maxlength="128" required>
-                    <button class="reveal" type="button" data-reveal="password-new" aria-pressed="false">Show</button></div></div>
-                <div class="field"><label for="password-repeat">Repeat new password</label>
-                  <input class="input" id="password-repeat" type="password" autocomplete="new-password" maxlength="128" required></div>
-                <button class="btn" type="submit">Change password</button>
-              </form>
-              <form id="form-logout-all" class="form" novalidate>
-                <div class="field"><label for="logout-all-password">Current password</label>
-                  <input class="input" id="logout-all-password" type="password" autocomplete="current-password" maxlength="128" required></div>
-                <button class="btn btn--danger" type="submit">Sign out everywhere</button>
-                <p class="hint">Ends the sessions on every computer and browser. Subscriptions and purchases stay.</p>
-              </form>
+            <div id="security-no-password" hidden>
+              <p>This account has no password — you sign in with Google. You will need one to sign out everywhere or remove a computer.</p>
+              <p class="warn">The password is set from an emailed link. After that every session ends — on the website and in the app, and a running stream will stop.</p>
+              <div class="actions"><button class="btn btn--small" type="button" id="set-password">Email me a link to set a password</button></div>
+            </div>
+            <div id="security-forms">
+              <p class="warn">Changing the password and “Sign out everywhere” end every session — on the website and in the app. A running stream will stop.</p>
+              <div class="split">
+                <form id="form-password" class="form" novalidate>
+                  <div class="field"><label for="password-current">Current password</label>
+                    <input class="input" id="password-current" type="password" autocomplete="current-password" maxlength="128" required></div>
+                  <div class="field"><label for="password-new">New password</label>
+                    <div class="field__row"><input class="input" id="password-new" type="password" autocomplete="new-password" minlength="8" maxlength="128" required>
+                      <button class="reveal" type="button" data-reveal="password-new" aria-pressed="false">Show</button></div></div>
+                  <div class="field"><label for="password-repeat">Repeat new password</label>
+                    <input class="input" id="password-repeat" type="password" autocomplete="new-password" maxlength="128" required></div>
+                  <button class="btn" type="submit">Change password</button>
+                </form>
+                <form id="form-logout-all" class="form" novalidate>
+                  <div class="field"><label for="logout-all-password">Current password</label>
+                    <input class="input" id="logout-all-password" type="password" autocomplete="current-password" maxlength="128" required></div>
+                  <button class="btn btn--danger" type="submit">Sign out everywhere</button>
+                  <p class="hint">Ends the sessions on every computer and browser. Subscriptions and purchases stay.</p>
+                </form>
+              </div>
             </div>
           </article>
         </div>

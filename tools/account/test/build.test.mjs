@@ -19,6 +19,7 @@ test("mock build: demo server and panel are included, no network allowed by CSP"
     const result = run("--mode", "mock", "--out", out);
     assert.equal(result.status, 0, result.stderr);
     assert.match(read(out, "assets/js/account/config.js"), /export const MODE = "mock";/);
+    assert.match(read(out, "assets/js/account/config.js"), /export const API_ORIGIN = MOCK_API_ORIGIN;/);
     assert.ok(existsSync(join(out, "assets/js/account/mock-server.js")));
     assert.ok(existsSync(join(out, "assets/js/account/mock-panel.js")));
     assert.match(read(out, "account/index.html"), /connect-src 'none'/);
@@ -34,6 +35,7 @@ test("real build: exact API origin in config and CSP, no demo files", () => {
     assert.equal(result.status, 0, result.stderr);
     const config = read(out, "assets/js/account/config.js");
     assert.match(config, /export const MODE = "real";/);
+    assert.match(config, /API_ORIGIN = "https:\/\/api-test\.tikteam\.live";/, "the Google bridge must be on exactly this origin");
     assert.match(config, /API_BASE = "https:\/\/api-test\.tikteam\.live\/api\/web\/v1"/);
     assert.match(config, /CHECKOUT_ORIGIN = "https:\/\/api-test\.tikteam\.live"/);
     assert.doesNotMatch(config, /mock/i);

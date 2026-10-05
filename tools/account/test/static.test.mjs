@@ -12,9 +12,10 @@ const PAGES = ["account/index.html", "account/recovery/index.html", "en/account/
 const shipped = readdirSync(JS_DIR).filter((f) => f.endsWith(".js"));
 
 test("committed account scripts are the production set only", () => {
-  assert.deepEqual(shipped.sort(), ["account-app.js", "api.js", "config.js", "dom.js", "guard.js", "i18n.js", "recovery-app.js", "urls.js"]);
+  assert.deepEqual(shipped.sort(), ["account-app.js", "api.js", "config.js", "dashboard.js", "dom.js", "guard.js", "i18n.js", "recovery-app.js", "urls.js"]);
   const config = readFileSync(join(JS_DIR, "config.js"), "utf8");
   assert.match(config, /export const MODE = "disabled";/, "the committed site is in disabled mode");
+  assert.match(config, /export const API_ORIGIN = "";/, "no API origin in the committed site");
   assert.doesNotMatch(config, /mock/i);
 });
 
@@ -57,13 +58,42 @@ test("recovery pages clear the fragment through the guard before other scripts",
   assert.match(guard, /history\.replaceState\(null, "", location\.pathname \+ location\.search\)/);
 });
 
-test("checkout and portal links are only followed after validation", () => {
+test("Google, checkout and portal links are only followed after validation", () => {
   const app = readFileSync(join(JS_DIR, "account-app.js"), "utf8");
   const assigns = [...app.matchAll(/location\.assign\(([^)]*)\)/g)].map((m) => m[1]);
-  assert.deepEqual(assigns, ["url.href", "url.href"]);
+  assert.deepEqual(assigns, ["url.href", "url.href", "url.href"]);
+  assert.match(app, /const url = googleStartUrl\(answer\.url, API_ORIGIN\);/);
   assert.match(app, /const url = checkoutUrl\(/);
   assert.match(app, /const url = portalUrl\(/);
-  assert.doesNotMatch(app, /window\.open|\/api\/auth\/login|DPoP/i, "no native sign-in, no popups");
+  assert.doesNotMatch(app, /window\.open|\/api\/auth\/|DPoP/i, "no native sign-in, no popups");
+});
+
+test("Google: the website start only, no poll loop, no Google SDK, hidden until the server enables it", () => {
+  const app = readFileSync(join(JS_DIR, "account-app.js"), "utf8");
+  assert.doesNotMatch(app, /google\/poll|setInterval|deviceName/, "polling and devices belong to the app, not the website");
+  assert.match(app, /answer\.pollToken !== undefined && answer\.pollToken !== null/, "a poll token in a website answer is refused");
+  assert.match(app, /\(await client\.get\("\/auth\/google\/config"\)\)\.body\?\.enabled === true/);
+  for (const file of shipped) {
+    const source = readFileSync(join(JS_DIR, file), "utf8");
+    assert.doesNotMatch(source, /accounts\.google\.com|apis\.google\.com|\/gsi\/|google\.accounts|client_?secret/i, file);
+  }
+  for (const page of PAGES.filter((p) => !p.includes("recovery"))) {
+    const html = readFileSync(join(SITE, page), "utf8");
+    assert.match(html, /<div id="google-signin" hidden>/, page + ": sign-in button hidden until config says enabled");
+    assert.match(html, /<article class="card card--wide" id="card-google" hidden>/, page + ": link card hidden by default");
+    assert.match(html, /id="google-link-password" type="password" autocomplete="current-password"/, page);
+    assert.doesNotMatch(html, /accounts\.google\.com|apis\.google\.com|\/gsi\//, page + ": no Google script");
+  }
+});
+
+test("confirmation first: the profile is read alone, a refusal keeps the session", () => {
+  const app = readFileSync(join(JS_DIR, "account-app.js"), "utf8");
+  const load = app.slice(app.indexOf("async function loadDashboard"), app.indexOf("async function loadGoogleConfig"));
+  assert.ok(load.indexOf('client.get("/account")') >= 0 && load.indexOf('client.get("/account")') < load.indexOf('client.get("/account/devices")'));
+  assert.match(load, /if \(!dashboardPlan\(account, googleEnabled\)\.loadFeatures\) \{ renderDashboard\(\); return; \}/);
+  assert.match(load, /e\?\.code === "email_unconfirmed"/, "a feature refusal shows the confirmation screen, not an outage");
+  assert.match(app, /if \(error\.code === "email_unconfirmed"\) \{ await refresh\(errorText\(error\), "error"\); return; \}/);
+  assert.equal([...app.matchAll(/"\/auth\/logout"/g)].length, 1, "only the sign-out button signs out");
 });
 
 test("demo files live outside the published asset folder", () => {

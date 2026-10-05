@@ -1,9 +1,45 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { checkoutUrl, portalUrl, recoveryLink } from "../../../assets/js/account/urls.js";
+import { checkoutUrl, portalUrl, recoveryLink, googleStartUrl } from "../../../assets/js/account/urls.js";
 
 const API = "https://api.tikteam.live";
 const PORTAL = "https://sandbox-customer-portal.paddle.com/cpl_abcdefghijklmnopqrstuvwxyz?action=overview&token=pga_0123456789abcdefghijKLMN";
+// The server writes the ticket with Convert.ToHexString (upper case); either case is hex.
+const TICKET = "0123456789ABCDEF".repeat(4);
+const GOOGLE = `${API}/auth/google/#${TICKET}`;
+
+test("Google start link: only the API's bridge page with a 64-hex ticket in the fragment", () => {
+  assert.equal(googleStartUrl(GOOGLE, API)?.href, GOOGLE);
+  assert.ok(googleStartUrl(GOOGLE.toLowerCase(), API), "lower-case hex is hex too");
+  for (const bad of [
+    GOOGLE.replace("https:", "http:"),                                  // not https
+    GOOGLE.replace("api.tikteam.live", "evil.example"),                 // other host
+    GOOGLE.replace("api.tikteam.live", "api.tikteam.live.evil.example"),
+    GOOGLE.replace("api.tikteam.live", "tikteam.live"),                 // the website is not the API
+    GOOGLE.replace("https://", "https://user:pass@"),                   // user info
+    GOOGLE.replace("api.tikteam.live", "api.tikteam.live:443"),         // explicit port
+    GOOGLE.replace("api.tikteam.live", "api.tikteam.live:8443"),
+    GOOGLE.replace("/#", "/?next=https://evil.example#"),               // query
+    GOOGLE.replace("/#", "/?#"),                                        // empty query
+    GOOGLE.replace("/auth/google/", "/auth/google"),                    // other paths
+    GOOGLE.replace("/auth/google/", "/auth/google/begin"),
+    GOOGLE.replace("/auth/google/", "/api/web/v1/auth/google/"),
+    GOOGLE.replace("/auth/google/", "/auth/Google/"),
+    GOOGLE.replace("/auth/google/", "/auth/google/../google/"),
+    GOOGLE.replace("/auth/google/", "/auth/%67oogle/"),
+    GOOGLE.slice(0, -1),                                                // 63 hex
+    GOOGLE + "0",                                                       // 65 hex
+    GOOGLE.slice(0, -1) + "g",                                          // not hex
+    GOOGLE + "&next=x",
+    `${API}/auth/google/`,                                              // no ticket
+    `${API}/auth/google/#`,
+    " " + GOOGLE, GOOGLE + " ", GOOGLE.replace("#", "#\n"),
+    `javascript:alert(1)//${API}/auth/google/#${TICKET}`,
+    "", null, undefined, 42, { href: GOOGLE },
+  ]) assert.equal(googleStartUrl(bad, API), null, String(bad));
+  for (const origin of ["http://api.tikteam.live", "https://api.tikteam.live/", "", null, "https://API.tikteam.live"])
+    assert.equal(googleStartUrl(GOOGLE, origin), null, "expected origin " + origin);
+});
 
 test("checkout link: only the API's own hosted page with a fragment capability", () => {
   assert.ok(checkoutUrl(API + "/billing/checkout#cap_ABCdef-123", API));

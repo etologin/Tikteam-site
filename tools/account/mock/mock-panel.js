@@ -1,5 +1,6 @@
 // Demo-only control panel for mock builds. Lets a tester issue recovery links, simulate the
-// provider confirming a payment, end the session, break the server or hit the rate limit.
+// provider confirming a payment, play the API's Google pages, switch Google or the email
+// confirmation off, end the session, break the server or hit the rate limit.
 
 import { mockServer } from "./mock-server.js";
 
@@ -44,8 +45,42 @@ function mount() {
     const password = document.getElementById("login-password");
     if (email && password) { email.value = controls.demo.email; password.value = controls.demo.password; }
   });
-  const reset = button(L("Письмо: новый пароль", "Email: new password"), () => showLink(controls.issueLink("reset")));
-  const confirm = button(L("Письмо: подтвердить почту", "Email: confirm address"), () => showLink(controls.issueLink("confirm")));
+  // Letters go to the signed-in account when there is one, otherwise to the demo account.
+  const target = () => controls.currentEmail() ?? controls.demo.email;
+  const reset = button(L("Письмо: новый пароль", "Email: new password"), () => showLink(controls.issueLink("reset", target())));
+  const confirm = button(L("Письмо: подтвердить почту", "Email: confirm address"), () => showLink(controls.issueLink("confirm", target())));
+  // The account page reads the server again on pageshow, as when the browser returns from Google.
+  const reload = () => dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true }));
+  const GOOGLE_RESULTS = {
+    created: L("Google вернул новый адрес: создан аккаунт без пароля, вход выполнен.", "Google returned a new address: an account without a password was created and signed in."),
+    signed_in: L("Вход через привязанный Google выполнен.", "Signed in with the linked Google account."),
+    linked: L("Google привязан, сеанс сайта обновлён.", "Google is linked; the website session was renewed."),
+    google_link_required: L("Адрес уже зарегистрирован с паролем: сервер показал бы на своей странице «войдите с паролем и привяжите Google». На сайте ничего не изменилось.",
+      "The address is registered with a password: the server's own page would say “sign in with the password and link Google”. Nothing changed on the website."),
+    google_link_conflict: L("Google с другим адресом или чужой: сервер отказал бы в привязке.", "A Google account with another address or someone else's: the server would refuse to link."),
+    google_flow_expired: L("Нет начатого входа через Google — сначала нажмите кнопку Google на странице.", "No Google sign-in started — press the Google button on the page first."),
+    logout_required: L("В браузере уже открыт другой аккаунт: сервер не заменил бы его молча.", "Another account is open in this browser: the server would not replace it silently."),
+    session_expired: L("Сеанс сменился во время привязки: сервер отказал бы.", "The session changed during linking: the server would refuse."),
+  };
+  function finishGoogle(options) {
+    const result = controls.completeGoogle(options);
+    output.textContent = GOOGLE_RESULTS[result] ?? result;
+    if (["created", "signed_in", "linked"].includes(result)) reload();
+  }
+  const google = button(L("Google: подтвердить вход", "Google: approve sign-in"), () => finishGoogle());
+  const googleDemo = button(L("Google: адрес демо-аккаунта", "Google: demo account's address"), () => finishGoogle({ email: controls.demo.email }));
+  const googleSwitch = button(L("Google: выключить / включить", "Google: turn off / on"), () => {
+    controls.setGoogleEnabled(!controls.googleEnabled);
+    output.textContent = controls.googleEnabled ? L("Сервер: Google настроен.", "Server: Google is configured.") : L("Сервер: Google не настроен (enabled=false).", "Server: Google is not configured (enabled=false).");
+    reload();
+  });
+  const unconfirm = button(L("Почта: снять / вернуть подтверждение", "Email: unconfirm / confirm"), () => {
+    const email = target();
+    const user = controls.users.get(email);
+    controls.setConfirmed(!user.confirmed, email);
+    output.textContent = (user.confirmed ? L("Почта подтверждена: ", "Email confirmed: ") : L("Почта не подтверждена: ", "Email not confirmed: ")) + email;
+    reload();
+  });
   const paid = button(L("Оплата прошла (как у Paddle)", "Payment succeeded (as Paddle)"), () => {
     output.textContent = controls.completePayment()
       ? L("Провайдер подтвердил оплату. Права появятся после «Проверить оплату».", "Provider confirmed. Rights appear after “Check payment”.")
@@ -66,7 +101,7 @@ function mount() {
 
   const grid = document.createElement("div");
   grid.className = "mock-panel__grid";
-  grid.append(fill, reset, confirm, paid, expire, outage, limit);
+  grid.append(fill, google, googleDemo, googleSwitch, unconfirm, reset, confirm, paid, expire, outage, limit);
   panel.append(title, creds, grid, output);
   document.body.append(panel);
 }

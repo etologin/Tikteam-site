@@ -103,6 +103,17 @@ test("texts: codes and states are translated; unknown ones stay neutral", () => 
   assert.match(errorText({ code: "current_password_invalid" }, "en"), /current password is wrong/);
   assert.match(errorText({ code: "rate_limited", retryAfter: 12 }, "ru"), /12 с/);
   assert.equal(errorText({ code: "something_new" }, "en"), errorText({ code: "unexpected" }, "en"));
+  // Confirmation and Google answers have their own texts; none of them reads as an outage.
+  const outage = errorText({ code: "service_unavailable" }, "ru");
+  for (const code of ["email_unconfirmed", "google_link_required", "google_link_conflict", "google_flow_expired", "logout_required"]) {
+    for (const lang of ["ru", "en"]) {
+      const text = errorText({ code }, lang);
+      assert.notEqual(text, errorText({ code: "unexpected" }, lang), `${code} (${lang}) has its own text`);
+      assert.notEqual(text, outage, code);
+    }
+  }
+  assert.match(errorText({ code: "email_unconfirmed" }, "ru"), /Подтвердите почту/);
+  assert.match(errorText({ code: "google_link_required" }, "en"), /link Google/);
   assert.deepEqual(billingState("active", "ru"), { text: "Подписка активна", tone: "on" });
   assert.equal(billingState("brand_new_state", "en").tone, "", "an unknown state is never shown as success");
   assert.equal(moduleName({ id: "kaspi-app", name: "Kaspi App" }), "TikDonate", "display name changes, id does not");
