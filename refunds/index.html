@@ -14,6 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Unbounded:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/menu.js" defer></script>
 </head>
 <body>
   <header class="top">
@@ -27,7 +28,19 @@
         <a href="../#faq">Вопросы</a>
       </nav>
       <a class="lang" href="../en/refunds/" hreflang="en" lang="en" aria-label="English version">EN</a>
-      <a class="btn btn--small btn--ghost" href="https://discord.gg/GgXkaWpMhS" target="_blank" rel="noopener">Discord</a>
+      <a class="btn btn--small btn--ghost top__discord" href="https://discord.gg/GgXkaWpMhS" target="_blank" rel="noopener">Discord</a>
+      <a class="btn btn--small top__account" href="https://account.tikteam.live/account/">Личный кабинет</a>
+      <details class="menu">
+        <summary class="menu__toggle"><span class="menu__bars" aria-hidden="true"></span><span class="sr-only">Меню</span></summary>
+        <div class="menu__panel">
+          <nav class="wrap menu__nav" aria-label="Меню">
+            <a href="../#modules">Модули</a>
+            <a href="../#faq">Вопросы</a>
+            <a class="btn btn--small menu__account" href="https://account.tikteam.live/account/">Личный кабинет</a>
+            <a class="btn btn--small btn--ghost" href="https://discord.gg/GgXkaWpMhS" target="_blank" rel="noopener">Discord</a>
+          </nav>
+        </div>
+      </details>
     </div>
   </header>
 
@@ -92,6 +105,7 @@
         <span class="brand__name">Tik<span class="grad">Team</span></span>
         <p>© 2026 TikTeam</p>
         <p class="foot__links">
+          <a href="https://account.tikteam.live/account/">Личный кабинет</a>
           <a href="../terms/">Условия</a>
           <a href="../refunds/">Возвраты</a>
           <a href="../privacy/">Конфиденциальность</a>
