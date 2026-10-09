@@ -62,7 +62,10 @@ test("Google, checkout and portal links are only followed after validation", () 
   const app = readFileSync(join(JS_DIR, "account-app.js"), "utf8");
   const assigns = [...app.matchAll(/location\.assign\(([^)]*)\)/g)].map((m) => m[1]);
   assert.deepEqual(assigns, ["url.href", "url.href", "url.href"]);
-  assert.match(app, /const url = googleStartUrl\(answer\.url, API_ORIGIN\);/);
+  assert.match(app, /const url = googleStartUrl\(answer\.url, API_ORIGIN, locale\);/);
+  // The bridge language is the page's own, sent with every start (sign-in and linking).
+  assert.match(app, /const locale = pageLang\(\);\s+const answer = \(await client\.post\("\/auth\/google\/start", \{ \.\.\.body, locale \}\)\)/);
+  assert.doesNotMatch(app, /navigator\.(language|languages)/, "never the browser's language");
   assert.match(app, /const url = checkoutUrl\(/);
   assert.match(app, /const url = portalUrl\(/);
   assert.doesNotMatch(app, /window\.open|\/api\/auth\/|DPoP/i, "no native sign-in, no popups");

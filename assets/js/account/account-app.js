@@ -6,7 +6,7 @@ import { MODE, API_ORIGIN, API_BASE, CHECKOUT_ORIGIN, createTransport } from "./
 import { ApiError, createClient } from "./api.js";
 import { checkoutUrl, portalUrl, googleStartUrl } from "./urls.js";
 import { dashboardPlan } from "./dashboard.js";
-import { t, errorText, billingState, moduleName, packName, formatDate } from "./i18n.js";
+import { t, errorText, billingState, moduleName, packName, formatDate, pageLang } from "./i18n.js";
 import { byId, el, showOnly, notice, busy, clearPasswords, wireRevealButtons, isEmail, isPasswordLength } from "./dom.js";
 
 const VIEWS = ["view-loading", "view-disabled", "view-unavailable", "view-auth", "view-dashboard"];
@@ -275,12 +275,14 @@ function wireForms() {
 /**
  * POST /auth/google/start, then the API's own bridge page in this tab — never a frame or popup.
  * Nothing about the flow is kept: the one-time ticket travels only in the URL fragment that the
- * bridge removes, and Google sends the browser back to /account/, where the page asks again.
+ * bridge removes, and Google sends the browser back to this language's /account/, where the
+ * page asks again. The language is this page's own (<html lang>), never the browser's.
  * @param {{currentPassword?: string}} body {} to sign in, {currentPassword} to link this account
  */
 async function openGoogle(body) {
-  const answer = (await client.post("/auth/google/start", body)).body ?? {};
-  const url = googleStartUrl(answer.url, API_ORIGIN);
+  const locale = pageLang();
+  const answer = (await client.post("/auth/google/start", { ...body, locale })).body ?? {};
+  const url = googleStartUrl(answer.url, API_ORIGIN, locale);
   // A website start never carries a poll token: that capability belongs to the app alone.
   if (!url || (answer.pollToken !== undefined && answer.pollToken !== null)) { notice(t("google.badLink"), "error"); return; }
   if (MODE === "mock") { notice(t("google.mockStart", { host: url.host })); return; }

@@ -95,10 +95,19 @@ try {
   await send("Page.enable");
 
   // Visitor: Google appears because the server's config says enabled; starting never navigates in mock.
-  for (const [path, label] of [["/account/", "Войти через Google"], ["/en/account/", "Sign in with Google"]]) {
+  // Each page starts the bridge in its own language, for sign-in and for linking alike.
+  for (const [path, label, locale] of [["/account/", "Войти через Google", "ru"], ["/en/account/", "Sign in with Google", "en"]]) {
     await open(path);
     const r = await run(`return { signin: visible('google-signin'), label: $('google-login').querySelector('.gsi-material-button-contents').textContent, auth: visible('view-auth') };`);
     check(r.auth && r.signin && r.label === label, `${path}: Google sign-in shown from the server's config`);
+    const start = await run(`$('google-login').click(); await wait(500); return { sent: mock.lastGoogleStart, notice: $('notice').textContent };`);
+    check(start.sent?.locale === locale && start.sent?.link === false && start.notice.includes("api.mock.invalid"),
+      `${path}: sign-in starts the bridge with locale ${locale} and the link passes the ${locale} check`);
+    await open(path); // a fresh demo server: nobody signed in yet
+    const link = await run(`await signIn(); $('google-link-password').value = mock.demo.password; submit('form-google-link'); await wait(500);
+      return { sent: mock.lastGoogleStart, notice: $('notice').textContent, cleared: $('google-link-password').value === '' };`);
+    check(link.sent?.locale === locale && link.sent?.link === true && link.notice.includes("api.mock.invalid") && link.cleared,
+      `${path}: linking sends the password with locale ${locale}`);
   }
   await open("/account/");
   const before = navigations;

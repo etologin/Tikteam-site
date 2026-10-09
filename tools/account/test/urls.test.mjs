@@ -41,6 +41,35 @@ test("Google start link: only the API's bridge page with a 64-hex ticket in the 
     assert.equal(googleStartUrl(GOOGLE, origin), null, "expected origin " + origin);
 });
 
+test("Google start link per language: Russian has no query, English exactly ?lang=en", () => {
+  const EN = `${API}/auth/google/?lang=en#${TICKET}`;
+  assert.equal(googleStartUrl(GOOGLE, API, "ru")?.href, GOOGLE, "ru is the default and explicit value");
+  assert.equal(googleStartUrl(EN, API, "en")?.href, EN);
+  assert.ok(googleStartUrl(EN.toLowerCase().replace("https://api.tikteam.live", API), API, "en"), "lower-case ticket");
+  assert.equal(googleStartUrl(EN, API, "ru"), null, "a Russian start never accepts ?lang=en");
+  assert.equal(googleStartUrl(EN, API), null, "nor does the default");
+  assert.equal(googleStartUrl(GOOGLE, API, "en"), null, "an English start must come back with ?lang=en");
+  for (const bad of [
+    `${API}/auth/google/?lang=ru#${TICKET}`,
+    `${API}/auth/google/?lang=EN#${TICKET}`,
+    `${API}/auth/google/?LANG=en#${TICKET}`,
+    `${API}/auth/google/?lang=en&next=https://evil.example#${TICKET}`,
+    `${API}/auth/google/?next=x&lang=en#${TICKET}`,
+    `${API}/auth/google/?lang=en&#${TICKET}`,
+    `${API}/auth/google/?lang=en=#${TICKET}`,
+    `${API}/auth/google/?lang=%65n#${TICKET}`,
+    `${API}/auth/google/?lang=en`,
+    `${API}/auth/google/?lang=en#`,
+    `${API}/auth/google/?lang=en#${TICKET}0`,
+    `${API}/auth/google/?lang=en&ticket=${TICKET}`,
+    `${API}/auth/google?lang=en#${TICKET}`,
+    `https://evil.example/auth/google/?lang=en#${TICKET}`,
+    `${API}:443/auth/google/?lang=en#${TICKET}`,
+  ]) assert.equal(googleStartUrl(bad, API, "en"), null, bad);
+  for (const locale of ["de", "EN", "", null, "constructor", "__proto__", "toString"])
+    assert.equal(googleStartUrl(GOOGLE, API, locale), null, "unknown locale " + String(locale));
+});
+
 test("checkout link: only the API's own hosted page with a fragment capability", () => {
   assert.ok(checkoutUrl(API + "/billing/checkout#cap_ABCdef-123", API));
   for (const bad of [

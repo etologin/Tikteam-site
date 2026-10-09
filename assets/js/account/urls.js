@@ -4,6 +4,8 @@
 const PORTAL_HOST = "sandbox-customer-portal.paddle.com";
 const GOOGLE_BRIDGE = "/auth/google/";
 const GOOGLE_TICKET = /^[0-9A-Fa-f]{64}$/;
+// The only query each language may carry: Russian none, English exactly ?lang=en.
+const GOOGLE_QUERY = new Map([["ru", ""], ["en", "?lang=en"]]);
 
 function parse(value) {
   if (typeof value !== "string" || value.length < 1 || value.length > 8192 || value !== value.trim()) return null;
@@ -28,17 +30,21 @@ export function checkoutUrl(value, checkoutOrigin) {
 /**
  * Google sign-in start from POST /auth/google/start: exactly the API's own bridge page
  * `/auth/google/` with a one-time ticket of 64 hex digits in the fragment, which the
- * bridge removes at once. No query, user info, port, other path or other origin.
+ * bridge removes at once. Russian has no query, English exactly `?lang=en`; nothing else
+ * is accepted, and neither user info, a port, another path nor another origin.
  * @param {unknown} value server response field
  * @param {string} apiOrigin exact API origin of this build, e.g. https://api.tikteam.live
+ * @param {"ru"|"en"} locale the language the start was requested in
  */
-export function googleStartUrl(value, apiOrigin) {
+export function googleStartUrl(value, apiOrigin, locale = "ru") {
   if (typeof apiOrigin !== "string" || !/^https:\/\/[a-z0-9.-]+$/.test(apiOrigin)) return null;
-  const prefix = apiOrigin + GOOGLE_BRIDGE + "#";
+  const query = GOOGLE_QUERY.get(locale);
+  if (query === undefined) return null;
+  const prefix = apiOrigin + GOOGLE_BRIDGE + query + "#";
   if (typeof value !== "string" || !value.startsWith(prefix) || !GOOGLE_TICKET.test(value.slice(prefix.length))) return null;
   const url = parse(value);
   if (!url || url.protocol !== "https:" || url.origin !== apiOrigin || url.username || url.password || url.port) return null;
-  if (url.pathname !== GOOGLE_BRIDGE || url.search || url.href !== value) return null;
+  if (url.pathname !== GOOGLE_BRIDGE || url.search !== query || url.href !== value) return null;
   return url;
 }
 

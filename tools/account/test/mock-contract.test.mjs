@@ -225,6 +225,32 @@ test("Google for a visitor: config first, exact bridge link without a poll token
   assert.equal(c.completeGoogle(), "google_flow_expired", "a Google start is used once");
 });
 
+test("Google bridge language: ru/en for sign-in and linking, exact URLs, nothing else accepted", async () => {
+  const { client, c } = setup();
+  await client.bootstrap();
+  // Sign-in: Russian keeps the old URL, English adds exactly ?lang=en; no locale still means Russian.
+  for (const [body, locale] of [[{ locale: "ru" }, "ru"], [{ locale: "en" }, "en"], [{}, "ru"], [{ locale: null }, "ru"]]) {
+    const start = (await client.post("/auth/google/start", body)).body;
+    assert.ok(googleStartUrl(start.url, MOCK_API_ORIGIN, locale), `${JSON.stringify(body)} → ${start.url}`);
+    assert.equal(googleStartUrl(start.url, MOCK_API_ORIGIN, locale === "ru" ? "en" : "ru"), null, "and only for its own language");
+    assert.deepEqual(c.lastGoogleStart, { locale, link: false });
+    assert.equal(start.pollToken, null);
+  }
+  for (const locale of ["de", "EN", "", 1, true])
+    await assert.rejects(client.post("/auth/google/start", { locale }), (e) => e.status === 400 && e.code === "invalid_locale", "locale " + JSON.stringify(locale));
+  for (const extra of [{ returnUrl: "https://evil.example" }, { redirectUri: "https://evil.example" }, { lang: "en" }])
+    await assert.rejects(client.post("/auth/google/start", { locale: "en", ...extra }), (e) => e.code === "invalid_request", "unknown field " + Object.keys(extra)[0]);
+
+  // Linking keeps its current password and carries the language the same way.
+  await signIn(client);
+  const link = (await client.post("/auth/google/start", { currentPassword: DEMO.password, locale: "en" })).body;
+  assert.ok(googleStartUrl(link.url, MOCK_API_ORIGIN, "en"), link.url);
+  assert.deepEqual(c.lastGoogleStart, { locale: "en", link: true });
+  assert.ok(googleStartUrl((await client.post("/auth/google/start", { currentPassword: DEMO.password, locale: "ru" })).body.url, MOCK_API_ORIGIN, "ru"));
+  await assert.rejects(client.post("/auth/google/start", { currentPassword: DEMO.password, locale: "fr" }), (e) => e.code === "invalid_locale");
+  await assert.rejects(client.post("/auth/google/start", { locale: "en" }), (e) => e.code === "logout_required", "signed in without a password is still a second sign-in");
+});
+
 test("Google switched off: config says so, the start route does not exist", async () => {
   const { client, c } = setup();
   c.setGoogleEnabled(false);

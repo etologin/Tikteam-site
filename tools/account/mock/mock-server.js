@@ -38,6 +38,7 @@ export function createMockServer({ now = () => Date.now() } = {}) {
   let rateLimitSeconds = null;  // next request answers 429
   let googleEnabled = true;     // GET /auth/google/config
   let googleFlow = null;        // the one pending Google start in this demo
+  let lastGoogleStart = null;   // { locale, link } of the last accepted start body, for tests
   const log = [];               // request log for tests (paths only)
 
   /** password null = an account created through Google, which has no password yet. */
@@ -132,10 +133,12 @@ export function createMockServer({ now = () => Date.now() } = {}) {
       packs: user.packs.map((p) => ({ id: p.id, owned: p.owned, canPlay: avatar })),
     };
   }
-  function startGoogle(previous) {
+  function startGoogle(previous, locale) {
     const ticket = hexTicket();
-    googleFlow = { ticket, previous: previous ? { email: previous.email, stamp: previous.stamp } : null, expiresAt: now() + GOOGLE_FLOW };
-    return { url: `${MOCK_API_ORIGIN}/auth/google/#${ticket}`, pollToken: null, expiresAt: new Date(googleFlow.expiresAt).toISOString() };
+    googleFlow = { ticket, locale, previous: previous ? { email: previous.email, stamp: previous.stamp } : null, expiresAt: now() + GOOGLE_FLOW };
+    // Like the server: the language travels as exactly ?lang=en, the ticket only in the fragment.
+    const query = locale === "en" ? "?lang=en" : "";
+    return { url: `${MOCK_API_ORIGIN}/auth/google/${query}#${ticket}`, pollToken: null, expiresAt: new Date(googleFlow.expiresAt).toISOString() };
   }
   const validEmail = (value) => typeof value === "string" && value.length <= 254 && /^[^\s@]+@[^\s@]+$/.test(value);
   const validPassword = (value) => typeof value === "string" && value.length >= 8 && value.length <= 128;
@@ -207,17 +210,22 @@ export function createMockServer({ now = () => Date.now() } = {}) {
         return respond(200, { authenticated: true, expiresAt: new Date(cookie.idleUntil).toISOString() });
       }
       case "/auth/google/start": {
-        // {} signs a visitor in; {currentPassword} links Google to the signed-in account.
-        const b = body(raw, []) ?? body(raw, ["currentPassword"]);
+        // {} signs a visitor in; {currentPassword} links Google to the signed-in account; both may
+        // name the bridge language. Any other field (a return URL, a redirect) is refused.
+        const b = body(raw, []) ?? body(raw, ["locale"]) ?? body(raw, ["currentPassword"]) ?? body(raw, ["currentPassword", "locale"]);
         if (!b) return fail(400, "invalid_request", "Неверный запрос.");
+        // Missing or null means Russian, as before; only the exact values are accepted.
+        const locale = b.locale ?? "ru";
+        if (locale !== "ru" && locale !== "en") return fail(400, "invalid_locale", "Неизвестный язык.");
+        lastGoogleStart = { locale, link: b.currentPassword !== undefined && b.currentPassword !== null };
         const password = b.currentPassword ?? null;
-        if (!user) return password === null ? respond(200, startGoogle(null)) : fail(400, "invalid_request", "Неверный запрос.");
+        if (!user) return password === null ? respond(200, startGoogle(null, locale)) : fail(400, "invalid_request", "Неверный запрос.");
         if (typeof password !== "string" || password.length < 1 || password.length > 128)
           return fail(409, "logout_required", "Сначала выйдите из текущего аккаунта и повторите вход через Google.");
         if (!user.confirmed) return needConfirmed();
         // The start route reports a wrong password as invalid_credentials, like sign-in.
         if (user.password === null || user.password !== password) return fail(403, "invalid_credentials", "Неверный пароль.");
-        return respond(200, startGoogle(user));
+        return respond(200, startGoogle(user, locale));
       }
       case "/auth/logout": {
         if (!body(raw, [])) return fail(400, "invalid_request", "Неверный запрос.");
@@ -395,6 +403,8 @@ export function createMockServer({ now = () => Date.now() } = {}) {
       setGoogleEnabled(enabled) { googleEnabled = enabled; if (!enabled) googleFlow = null; },
       get googleEnabled() { return googleEnabled; },
       get googlePending() { return googleFlow !== null; },
+      /** Language and kind ({ locale, link }) of the last Google start the demo accepted. */
+      get lastGoogleStart() { return lastGoogleStart; },
       completeGoogle,
       currentCsrf() { return csrf.token; },
     },
