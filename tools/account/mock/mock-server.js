@@ -51,7 +51,7 @@ export function createMockServer({ now = () => Date.now() } = {}) {
         "dead-as-disco": { name: "Dead as Disco", active: false, paidUntil: null },
         "avatar-overlay": { name: "Avatar Overlay", active: false, paidUntil: null },
         "kaspi-app": { name: "TikDonate", active: false, paidUntil: null },
-        "tiktok-overlay": { name: "TikTok Overlay", active: false, paidUntil: null },
+        "tiktok-overlay": { name: "Battle Overlay", active: false, paidUntil: null },
       },
       packs: [{ id: "standard", owned: false }, { id: "neon-party", owned: true }],
       devices: [

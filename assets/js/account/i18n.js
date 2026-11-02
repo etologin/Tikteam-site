@@ -223,7 +223,7 @@ const MODULE_NAMES = {
   "dead-as-disco": "Dead as Disco",
   "avatar-overlay": "Avatar Overlay",
   "kaspi-app": "TikDonate", // Display name only: the id stays kaspi-app.
-  "tiktok-overlay": "TikTok Overlay",
+  "tiktok-overlay": "Battle Overlay", // Display name only: the id stays tiktok-overlay.
 };
 
 const STATES_ON = new Set(["active"]);

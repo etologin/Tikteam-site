@@ -117,6 +117,7 @@ test("texts: codes and states are translated; unknown ones stay neutral", () => 
   assert.deepEqual(billingState("active", "ru"), { text: "Подписка активна", tone: "on" });
   assert.equal(billingState("brand_new_state", "en").tone, "", "an unknown state is never shown as success");
   assert.equal(moduleName({ id: "kaspi-app", name: "Kaspi App" }), "TikDonate", "display name changes, id does not");
+  assert.equal(moduleName({ id: "tiktok-overlay", name: "TikTok Overlay" }), "Battle Overlay", "the module id stays tiktok-overlay");
   assert.equal(moduleName({ id: "future-module", name: "Future" }), "Future");
   assert.equal(packName({ id: "standard" }, "en"), "Standard pack");
   assert.equal(formatDate(null), "");
