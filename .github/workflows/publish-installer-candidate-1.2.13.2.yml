@@ -1,0 +1,118 @@
+name: Publish review candidate installer 1.2.13.2
+
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/publish-installer-candidate-1.2.13.2.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tikteam-installer-candidate-1.2.13.2
+  cancel-in-progress: false
+
+jobs:
+  defender:
+    if: github.repository == 'etologin/Tikteam-site' && github.ref == 'refs/heads/main'
+    runs-on: windows-2025
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Independently scan the exact candidate with Microsoft Defender
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $ProgressPreference = 'SilentlyContinue'
+          $expected = '2542DD397B087037BB91524D40B581952872B065E9F54A18BC856609709A9EA4'
+          $status = Get-MpComputerStatus
+          if (-not $status.AMServiceEnabled -or -not $status.AntivirusEnabled) { throw 'Defender is unavailable; no clean verdict and no publication' }
+          Update-MpSignature
+          $status = Get-MpComputerStatus
+          $file = Join-Path $env:RUNNER_TEMP 'TikTeam.Setup.exe'
+          Invoke-WebRequest -UseBasicParsing -MaximumRedirection 0 -Uri 'https://updates.tikteam.live/candidates/setup-1.2.13.2/TikTeam.Setup.exe' -OutFile $file
+          if ((Get-Item -LiteralPath $file).Length -ne 162792801 -or (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash -ne $expected) { throw 'Candidate pin mismatch' }
+          Set-Content -LiteralPath $file -Stream Zone.Identifier -Value "[ZoneTransfer]`r`nZoneId=3`r`n" -Encoding ASCII
+          $scanner = 'C:\ProgramData\Microsoft\Windows Defender\Platform\CurrentVersion\MpCmdRun.exe'
+          if (-not (Test-Path -LiteralPath $scanner)) { $scanner = Join-Path $env:ProgramFiles 'Windows Defender\MpCmdRun.exe' }
+          $scanOutput = & $scanner -Scan -ScanType 3 -File $file -DisableRemediation 2>&1 | Out-String
+          $scanExit = $LASTEXITCODE
+          Write-Output $scanOutput
+          if ($scanExit -ne 0 -or $scanOutput -notmatch 'found no threats') { throw 'Defender did not return a clean scan; no publication' }
+          if ((Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash -ne $expected) { throw 'Candidate changed during scan' }
+          $result = [ordered]@{ Passed = $true; Sha256 = $expected; Bytes = 162792801; InternetZoneMarked = $true; AntivirusEnabled = $status.AntivirusEnabled; RealTimeProtectionEnabled = $status.RealTimeProtectionEnabled; SignatureVersion = $status.AntivirusSignatureVersion; EngineVersion = $status.AMEngineVersion; CandidateExecuted = $false; ProtectionSettingsChanged = $false; MicrosoftAnalystDetermination = 'Not received' }
+          Write-Output ('TIKTEAM_DEFENDER_RESULT=' + ($result | ConvertTo-Json -Compress))
+
+  publish:
+    needs: defender
+    if: github.repository == 'etologin/Tikteam-site' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - name: Fetch only the exact separately staged candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --show-error --silent --proto '=https' --tlsv1.2 \
+            --connect-timeout 15 --max-time 300 --retry 2 \
+            --output TikTeam.Setup.exe \
+            https://updates.tikteam.live/candidates/setup-1.2.13.2/TikTeam.Setup.exe
+          test "$(stat -c %s TikTeam.Setup.exe)" = 162792801
+          printf '%s  %s\n' \
+            2542dd397b087037bb91524d40b581952872b065e9f54a18bc856609709a9ea4 \
+            TikTeam.Setup.exe | sha256sum --check --strict
+
+      - name: Publish as a prerelease without replacing the website installer
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: etologin/Tikteam-site
+          RELEASE_TAG: setup-v1.2.13.2
+        run: |
+          set -euo pipefail
+          cat > release-notes.md <<'NOTES'
+          Review candidate: TikTeam installer 1.2.13.2 for Windows.
+          This prerelease has not replaced the main website download.
+
+          The recipient reported Defender Trojan:Win32/Wacatac.B!ml on the
+          previous compressed installer 1.2.13.1, which remains withdrawn.
+          This candidate uses the standard uncompressed .NET single-file format.
+          Local Defender and an independent Windows CI Defender custom scan
+          reported no threats. ClamAV could not complete the full bundle scan
+          within its time and aggregate-size bounds; that result is inconclusive.
+          This is not a Microsoft false-positive determination. Keep Defender
+          enabled; do not restore quarantined files or add antivirus exclusions.
+
+          One-click installation and visible progress are preserved. The signed
+          latest client comes from the existing signed release channel. The installer
+          checks its signature, complete size and SHA256 before installation.
+          A normal browser filename suffix such as (2) no longer skips shortcuts.
+
+          Size: 162792801 bytes.
+          SHA256: 2542dd397b087037bb91524d40b581952872b065e9f54a18bc856609709a9ea4
+          NOTES
+          if ! gh release view "$RELEASE_TAG" --json tagName > /dev/null; then
+            gh release create "$RELEASE_TAG" --target "$GITHUB_SHA" --draft \
+              --prerelease --latest=false \
+              --title 'TikTeam installer 1.2.13.2 — review candidate' \
+              --notes-file release-notes.md
+          fi
+          gh release view "$RELEASE_TAG" --json assets,isDraft,isPrerelease > release.json
+          jq -e '.isPrerelease == true' release.json > /dev/null
+          if ! jq -e 'any(.assets[]; .name == "TikTeam.Setup.exe")' release.json > /dev/null; then
+            gh release upload "$RELEASE_TAG" TikTeam.Setup.exe
+          fi
+          mkdir verified-roundtrip
+          gh release download "$RELEASE_TAG" --pattern TikTeam.Setup.exe --dir verified-roundtrip
+          test "$(stat -c %s verified-roundtrip/TikTeam.Setup.exe)" = 162792801
+          printf '%s  %s\n' \
+            2542dd397b087037bb91524d40b581952872b065e9f54a18bc856609709a9ea4 \
+            verified-roundtrip/TikTeam.Setup.exe | sha256sum --check --strict
+          if jq -e '.isDraft' release.json > /dev/null; then
+            gh release edit "$RELEASE_TAG" --draft=false --prerelease --latest=false
+          fi
+
