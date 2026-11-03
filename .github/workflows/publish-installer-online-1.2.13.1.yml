@@ -1,0 +1,71 @@
+name: Publish TikTeam online installer 1.2.13.1
+
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/publish-installer-online-1.2.13.1.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tikteam-installer-online-1.2.13.1
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.repository == 'etologin/Tikteam-site' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - name: Download the existing public installer and verify its release pin
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --show-error --silent --proto '=https' --tlsv1.2 \
+            --connect-timeout 15 --max-time 300 --retry 2 \
+            --output TikTeam.Setup.exe https://updates.tikteam.live/TikTeam.Setup.exe
+          test "$(stat -c %s TikTeam.Setup.exe)" = 71997695
+          printf '%s  %s\n' \
+            cdbec0dac87c0b6993d3b5093daa89afe23c7a1ff60735e68e61dc57a6fff69d \
+            TikTeam.Setup.exe | sha256sum --check --strict
+
+      - name: Publish the verified binary without replacing an existing asset
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: etologin/Tikteam-site
+          RELEASE_TAG: setup-v1.2.13.1
+        run: |
+          set -euo pipefail
+          cat > release-notes.md <<'NOTES'
+          TikTeam installer 1.2.13.1 for Windows. Installs the signed TikTeam 1.2.13 client.
+          One-click installation, download progress, and a verified fast package mirror.
+
+          Size: 71997695 bytes.
+          SHA256: cdbec0dac87c0b6993d3b5093daa89afe23c7a1ff60735e68e61dc57a6fff69d
+
+          Original: https://updates.tikteam.live/TikTeam.Setup.exe
+          Website: https://tikteam.live/
+          NOTES
+          if ! gh release view "$RELEASE_TAG" --json tagName > /dev/null; then
+            gh release create "$RELEASE_TAG" --target "$GITHUB_SHA" --draft \
+              --title 'TikTeam installer 1.2.13.1 — Windows' --notes-file release-notes.md
+          fi
+          gh release view "$RELEASE_TAG" --json assets,isDraft > release.json
+          if ! jq -e 'any(.assets[]; .name == "TikTeam.Setup.exe")' release.json > /dev/null; then
+            gh release upload "$RELEASE_TAG" TikTeam.Setup.exe
+          fi
+          mkdir verified-roundtrip
+          gh release download "$RELEASE_TAG" --pattern TikTeam.Setup.exe --dir verified-roundtrip
+          test "$(stat -c %s verified-roundtrip/TikTeam.Setup.exe)" = 71997695
+          printf '%s  %s\n' \
+            cdbec0dac87c0b6993d3b5093daa89afe23c7a1ff60735e68e61dc57a6fff69d \
+            verified-roundtrip/TikTeam.Setup.exe | sha256sum --check --strict
+          if jq -e '.isDraft' release.json > /dev/null; then
+            gh release edit "$RELEASE_TAG" --draft=false --latest=false
+          fi
+
