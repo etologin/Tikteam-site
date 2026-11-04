@@ -47,14 +47,14 @@
   <main class="legal">
     <article class="wrap legal__body">
       <h1>Privacy Policy</h1>
-      <p class="meta">Last updated: 3 October 2026</p>
+      <p class="meta">Last updated: 5 November 2026</p>
 
       <h2>1. Who processes your data</h2>
       <p>Your data is processed by the owner of the TikTeam service, an individual entrepreneur registered in the Republic of Kazakhstan ("we", "us"). For any data question, email <a href="mailto:support@tikteam.live">support@tikteam.live</a>.</p>
 
       <h2>2. What data we process</h2>
       <ul>
-        <li><strong>Account:</strong> email address, password hash (we never store the password itself), email confirmation status.</li>
+        <li><strong>Account:</strong> email address, password hash (we never store the password itself), email confirmation status; when you sign in with Google, your Google identifier and verified email.</li>
         <li><strong>Devices and sessions:</strong> device name, its public key, sign-in and sign-out times.</li>
         <li><strong>Technical data:</strong> IP address and details of requests to our server — to prevent abuse, rate-limit requests and diagnose problems.</li>
         <li><strong>Subscriptions and purchases:</strong> subscription status and term, purchased packs, Paddle customer and subscription IDs.
@@ -65,8 +65,8 @@
           viewers' names and avatars — pass through our server. They are relayed to the app in real time and are not stored in our database.</li>
         <li><strong>Correspondence:</strong> the content of emails and messages you send us by email or on Discord.</li>
       </ul>
-      <p>App settings, gift rules and the clips and sounds you add are stored on your computer and are not sent to us.</p>
-      <p>The tikteam.live website uses no cookies and no analytics. The site host (GitHub Pages) and the font service (Google Fonts) receive your IP address when a page loads.</p>
+      <p>When you add images, video or audio to the cloud media library, TikTeam receives those files for scanning and processing, and stores the prepared versions, names, sizes, checksums and ownership linked to your account. Saving cloud scenes also stores their contents and source layout settings. This lets you retrieve your library after signing in on another computer. Local files that you do not add to the cloud library are not uploaded by this mechanism.</p>
+      <p>The tikteam.live website uses no analytics. The account.tikteam.live account area uses necessary session and request-protection cookies. The site host (GitHub Pages) and the font service (Google Fonts) receive your IP address when a page loads.</p>
 
       <h2>3. Why we use your data</h2>
       <ul>
@@ -84,7 +84,9 @@
         <li><strong>Paddle</strong> — payments, taxes and refunds. Paddle handles payment data under its own
           <a href="https://www.paddle.com/legal/privacy" target="_blank" rel="noopener">privacy policy</a>.</li>
         <li><strong>Resend</strong> — sending account emails.</li>
-        <li><strong>Our server hosting provider</strong> — hosting the TikTeam server and its encrypted backups.</li>
+        <li><strong>HOSTKEY</strong> — hosting the TikTeam server, temporary file processing and storage of library catalogues.</li>
+        <li><strong>Backblaze B2</strong> — storing prepared library files in a private European-region bucket and encrypted server backups. Object names use service identifiers without email addresses.</li>
+        <li><strong>Google</strong> — verifying your identity when you choose Google sign-in. This sign-in does not give TikTeam access to your Gmail inbox.</li>
         <li><strong>TikTok LIVE data provider (Tik.Tools)</strong> — receiving events from your stream.</li>
         <li><strong>GitHub and Google</strong> — website hosting and fonts, as described above.</li>
         <li><strong>Discord</strong> — if you talk to us there.</li>
@@ -97,12 +99,13 @@
         <li>account data — while the account exists; after deletion, no longer than 30 days, except data we must keep by law or to resolve disputes;</li>
         <li>payment records — for the period required by tax law;</li>
         <li>module usage records — 24 months;</li>
+        <li>cloud library files and cloud scenes — until your deletion command or processing of an account-data deletion request. Subscription expiry alone does not delete them; new uploads require active access;</li>
         <li>server technical logs — no longer than 90 days.</li>
       </ul>
-      <p>Backups are encrypted and overwritten on a schedule. Deleted data may remain in them for a limited time until the backup is overwritten.</p>
+      <p>Server backups are encrypted and stored separately from active data. Deleting a library file does not modify previously created catalogue backups, which may retain file metadata and ownership records. You may send requests about deleting backup data to support@tikteam.live.</p>
 
       <h2>6. Security</h2>
-      <p>Connections to our server use HTTPS, passwords are stored only as hashes, and backups are encrypted. Only the administrator has access to the server and database.</p>
+      <p>Connections to our server use HTTPS, passwords are stored only as hashes, and backups are encrypted. Access to library files is checked against the owner's account; files are scanned for malware and processed in an isolated environment before publication. Only the administrator has access to the server and database.</p>
 
       <h2>7. Your rights</h2>
       <p>You can ask what data we hold about you, correct it, delete your account and its data, and withdraw your consent to processing.
