@@ -1,0 +1,92 @@
+name: Publish verified TikTeam 1.2.23 Windows release
+
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/publish-client-1.2.23.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tikteam-client-release-1.2.23
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.repository == 'etologin/Tikteam-site' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      actions: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: etologin/Tikteam-site
+      RELEASE_TAG: client-v1.2.23
+    steps:
+      - name: Require successful independent Defender scan for the pinned client
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api repos/etologin/Tikteam-site/actions/runs/42031935181 > defender-run.json
+          jq -e '.conclusion == "success" and .head_sha == "13ea60d3b68493796e00faffae2adf05eb53db42" and .path == ".github/workflows/verify-client-1.2.23.yml"' defender-run.json > /dev/null
+
+      - name: Download and verify exact published installer, signed metadata and client
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --show-error --silent --proto '=https' --tlsv1.2 --connect-timeout 15 --max-time 300 --retry 2 --output TikTeam.Setup.exe https://updates.tikteam.live/TikTeam.Setup.exe
+          curl --fail --show-error --silent --proto '=https' --tlsv1.2 --connect-timeout 15 --max-time 30 --retry 2 --output release.json https://updates.tikteam.live/v1/subscriber/windows-x64/latest
+          curl --fail --show-error --silent --proto '=https' --tlsv1.2 --connect-timeout 15 --max-time 600 --retry 2 --output client-1e3cf942451c4fc82f2012760111e91c53002da93c227a0261461c2fc5a1a976.zip https://updates.tikteam.live/packages/1e3cf942451c4fc82f2012760111e91c53002da93c227a0261461c2fc5a1a976.zip
+          test "$(stat -c %s TikTeam.Setup.exe)" = 162858849
+          test "$(stat -c %s client-1e3cf942451c4fc82f2012760111e91c53002da93c227a0261461c2fc5a1a976.zip)" = 866714507
+          printf '%s  %s\n' 366932b4468241a6dc0aa622aea5c823af17c6cdc55a1397319a4a57df2e0e78 TikTeam.Setup.exe 76bb5835c3929b027c004683f6a04e0d2121f7b5422047b7098c9295f6bdc50a release.json 1e3cf942451c4fc82f2012760111e91c53002da93c227a0261461c2fc5a1a976 client-1e3cf942451c4fc82f2012760111e91c53002da93c227a0261461c2fc5a1a976.zip | sha256sum --check --strict
+
+      - name: Publish release assets and verify mirror roundtrip
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > release-notes.md <<'NOTES'
+          TikTeam 1.2.23 for Windows 10/11 (64-bit).
+
+          Reworked widget settings with one scene preview button.
+          Scene and imported widget settings carry forward on update.
+          Lower overlay rendering overhead and clearer gift plate effects.
+          TikDonate starts for subscribers, saves widget settings automatically,
+          and connects to DonationAlerts through TikTeam.
+          TikTeam renews the signed-in desktop session automatically.
+          Avatar Overlay refreshes the catalogue on clip or layout changes.
+          Top Gift downloads verified animations on demand.
+          Choose installation folder, optional Desktop and Start menu
+          shortcuts, Windows Installed Apps registration and normal uninstall.
+          Installation, update, relocation and removal preserve settings by default.
+          Visible download progress and verified fast mirror with origin fallback.
+
+          The exact client passed local and independent Windows Defender custom scans.
+          The installer is byte-identical to the previously verified 1.2.18 installer.
+          Installer: 162858849 bytes.
+          SHA256: 366932b4468241a6dc0aa622aea5c823af17c6cdc55a1397319a4a57df2e0e78
+          Client archive SHA256: 1e3cf942451c4fc82f2012760111e91c53002da93c227a0261461c2fc5a1a976
+          Client source: f1ce5165323973de2165d55829ba931413bbc838
+          NOTES
+          if ! gh release view "$RELEASE_TAG" --json tagName > /dev/null; then
+            gh release create "$RELEASE_TAG" --target "$GITHUB_SHA" --draft --latest=false --title 'TikTeam 1.2.23 — Windows' --notes-file release-notes.md
+          fi
+          gh release view "$RELEASE_TAG" --json assets,isDraft > release-state.json
+          for asset in TikTeam.Setup.exe release.json client-1e3cf942451c4fc82f2012760111e91c53002da93c227a0261461c2fc5a1a976.zip; do
+            if ! jq -e --arg name "$asset" 'any(.assets[]; .name == $name)' release-state.json > /dev/null; then
+              gh release upload "$RELEASE_TAG" "$asset"
+            fi
+          done
+          mkdir verified-roundtrip
+          gh release download "$RELEASE_TAG" --dir verified-roundtrip
+          cd verified-roundtrip
+          test "$(stat -c %s TikTeam.Setup.exe)" = 162858849
+          test "$(stat -c %s client-1e3cf942451c4fc82f2012760111e91c53002da93c227a0261461c2fc5a1a976.zip)" = 866714507
+          printf '%s  %s\n' 366932b4468241a6dc0aa622aea5c823af17c6cdc55a1397319a4a57df2e0e78 TikTeam.Setup.exe 76bb5835c3929b027c004683f6a04e0d2121f7b5422047b7098c9295f6bdc50a release.json 1e3cf942451c4fc82f2012760111e91c53002da93c227a0261461c2fc5a1a976 client-1e3cf942451c4fc82f2012760111e91c53002da93c227a0261461c2fc5a1a976.zip | sha256sum --check --strict
+          cd ..
+          if jq -e '.isDraft' release-state.json > /dev/null; then
+            gh release edit "$RELEASE_TAG" --draft=false --prerelease=false --latest=true
+          fi
