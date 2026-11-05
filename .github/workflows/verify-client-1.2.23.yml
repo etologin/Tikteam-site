@@ -1,0 +1,46 @@
+name: Independently verify TikTeam client 1.2.23
+
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/verify-client-1.2.23.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tikteam-defender-client-1.2.23
+  cancel-in-progress: false
+
+jobs:
+  defender:
+    if: github.repository == 'etologin/Tikteam-site' && github.ref == 'refs/heads/main'
+    runs-on: windows-2025
+    timeout-minutes: 20
+    steps:
+      - name: Scan exact client without executing it or changing protection
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $ProgressPreference = 'SilentlyContinue'
+          $expected = '1E3CF942451C4FC82F2012760111E91C53002DA93C227A0261461C2FC5A1A976'
+          $status = Get-MpComputerStatus
+          if (-not $status.AMServiceEnabled -or -not $status.AntivirusEnabled) { throw 'Defender is unavailable' }
+          Update-MpSignature
+          $status = Get-MpComputerStatus
+          $file = Join-Path $env:RUNNER_TEMP 'TikTeam-client-1.2.23.zip'
+          Invoke-WebRequest -UseBasicParsing -MaximumRedirection 0 -Uri 'https://updates.tikteam.live/packages/1e3cf942451c4fc82f2012760111e91c53002da93c227a0261461c2fc5a1a976.zip' -OutFile $file
+          if ((Get-Item -LiteralPath $file).Length -ne 866714507 -or (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash -ne $expected) { throw 'Client pin mismatch' }
+          $folder = Join-Path $env:RUNNER_TEMP 'TikTeam-client-1.2.23'
+          Expand-Archive -LiteralPath $file -DestinationPath $folder
+          if ((Get-ChildItem -LiteralPath $folder -File -Recurse).Count -ne 3355) { throw 'Extracted inventory mismatch' }
+          $scanner = 'C:\ProgramData\Microsoft\Windows Defender\Platform\CurrentVersion\MpCmdRun.exe'
+          if (-not (Test-Path -LiteralPath $scanner)) { $scanner = Join-Path $env:ProgramFiles 'Windows Defender\MpCmdRun.exe' }
+          $output = & $scanner -Scan -ScanType 3 -File $folder -DisableRemediation 2>&1 | Out-String
+          $code = $LASTEXITCODE
+          Write-Output $output
+          if ($code -ne 0 -or $output -notmatch 'found no threats') { throw 'Defender did not return a clean scan' }
+          if ((Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash -ne $expected) { throw 'Client changed during scan' }
+          $result = [ordered]@{ Passed=$true; Sha256=$expected; Bytes=866714507; AntivirusEnabled=$status.AntivirusEnabled; RealTimeProtectionEnabled=$status.RealTimeProtectionEnabled; SignatureVersion=$status.AntivirusSignatureVersion; EngineVersion=$status.AMEngineVersion; CandidateExecuted=$false; ProtectionSettingsChanged=$false; ExtractedFiles=(Get-ChildItem -LiteralPath $folder -File -Recurse).Count }
+          Write-Output ('TIKTEAM_DEFENDER_RESULT=' + ($result | ConvertTo-Json -Compress))
