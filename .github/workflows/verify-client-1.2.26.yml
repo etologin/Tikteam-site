@@ -40,8 +40,8 @@ jobs:
           if ($count -ne 3363) { throw 'Extracted inventory mismatch' }
           if ((Get-Item -LiteralPath $installer).Length -ne 162862945 -or (Get-FileHash -LiteralPath $installer).Hash -ne $setupHash) { throw 'Installer pin mismatch' }
           $voice = Join-Path $env:RUNNER_TEMP 'TikTeam-Silero-Kazakh-win-x64.zip'
-          $voiceHash = '239F933EE43BE17645A5F7B02266A448442FB045063BBAAFA1337D9E0E03613'
-          Invoke-WebRequest -UseBasicParsing -MaximumRedirection 0 -Uri 'https://updates.tikteam.live/packages/239f933ee43be17645a5f7b02266a448442fb045063bbaafa1337d9e0e03613.zip' -OutFile $voice
+          $voiceHash = '239F933EE43BE17645A5F7B02266A448442FB045063BBAAAFA1337D9E0E03613'
+          Invoke-WebRequest -UseBasicParsing -MaximumRedirection 0 -Uri 'https://updates.tikteam.live/packages/239f933ee43be17645a5f7b02266a448442fb045063bbaaafa1337d9e0e03613.zip' -OutFile $voice
           if ((Get-Item -LiteralPath $voice).Length -ne 201918482 -or (Get-FileHash -LiteralPath $voice).Hash -ne $voiceHash) { throw 'Voice pack pin mismatch' }
           Expand-Archive -LiteralPath $voice -DestinationPath (Join-Path $folder 'optional-voice-pack')
           $scanner = 'C:\ProgramData\Microsoft\Windows Defender\Platform\CurrentVersion\MpCmdRun.exe'
