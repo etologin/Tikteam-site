@@ -39,12 +39,17 @@ node --test tools/site/test/
 node tools/site/browser-check.mjs .preview/site-check
 ```
 
-The tests check the account links on every page and in both languages, the absence of
-local, test or old account addresses, embedded pages, forms and purchase or download links,
+The tests check the account links on every page and in both base languages, the absence of
+local, test or old account addresses, embedded account pages and sign-in forms,
 and that every internal link and anchor resolves. Public downloads must stay on the existing
 GitHub release or updates.tikteam.live destinations. `browser-check.mjs` drives headless Edge
 or Chrome (`TIKTEAM_BROWSER=<path>`) at 1280, 1024, 800, 700 and 375 px: no horizontal
 overflow, the right header items per width, and a mobile menu that opens with the account
 link and closes after a choice, on Escape and on a tap outside. Exit code 2 means no browser.
-It also checks German, French, Kazakh and Arabic at desktop and phone widths, including
+It also checks the completed language catalogs at desktop and phone widths, including
 right-to-left layout and language forwarding to the account area.
+
+The marketing site and hosted account area are separate deployment targets. Publishing
+only GitHub Pages does not update the account host. Its real-mode build must also include
+the synchronized localization scripts, styles, flags and dictionaries. Do not deploy the
+mock build or replace the server's existing API-origin configuration with the disabled one.

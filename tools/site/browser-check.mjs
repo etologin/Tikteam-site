@@ -141,7 +141,7 @@ try {
     check(!r.afterOutside, `${path} @375: a tap outside closes the menu`);
   }
   // Longer translations and RTL must fit the same header and preserve the portal language.
-  for(const language of ['de','fr','kk','ar']){
+  for(const language of ['de','fr','kk','ar','bg','es','nl','pt','tr','uk','cs','ja']){
     for(const width of [1280,700,375]){
       await open('/?lang='+language,width);
       const r=await run(`return {code:document.documentElement.lang,dir:document.documentElement.dir,

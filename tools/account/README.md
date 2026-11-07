@@ -46,8 +46,10 @@ node tools/account/build.mjs --mode real --api-origin https://api.tikteam.live -
   первый пароль задаётся одноразовой ссылкой восстановления. Нет поля — значит пароль есть.
 - **Google** показывается, только если `GET /auth/google/config` ответил `enabled: true`.
   Вход: `POST /auth/google/start` с `{locale}`; привязка: тот же запрос с
-  `{currentPassword, locale}` и только для подтверждённой почты. `locale` — язык самой
-  страницы (`<html lang>`: `/account/` → `ru`, `/en/account/` → `en`), не язык браузера.
+  `{currentPassword, locale}` и только для подтверждённой почты. Серверный Google bridge
+  принимает только `ru` и `en`: для русского интерфейса отправляется `ru`, для остальных
+  языков — `en`. Выбор языка самого сайта сохраняется после возврата; язык браузера
+  автоматически не подставляется.
   Ответ принимается, лишь если ссылка ровно `<API origin>/auth/google/#` + 64 hex для `ru`
   или `<API origin>/auth/google/?lang=en#` + 64 hex для `en` (других параметров нет)
   и `pollToken` пуст; переход — после нажатия, в той же вкладке. Ссылка, билет и пароль
@@ -63,6 +65,17 @@ node tools/account/build.mjs --mode real --api-origin https://api.tikteam.live -
   в `account.css` (CSP запрещает inline). Логотип не перерисовывать и не перекрашивать.
 
 ## Тесты
+
+Словари интерфейса и список 32 языков общие с клиентом TikTeam; синхронизация выполняется
+из клиентского репозитория через `tools/localization/sync-site.py`. В Web Storage хранится
+только предпочтение языка `tikteam.ui.language`, не токены, пароли или данные аккаунта.
+Имена, адреса email и введённые значения при переключении не переводятся.
+
+Сайт и `account.tikteam.live` размещены отдельно. Для выпуска перевода кабинета требуется
+собрать и развернуть его `real`-версию с прежним API-origin вместе с `assets/i18n`,
+`language.js`, `languages.js`, `language-aliases.js`, `locale-web.js` и `language.css`.
+Одна публикация основной страницы сайта не обновляет кабинет. Словари пока неполные;
+публикация полной локализации ожидает успешной проверки покрытия всех языков.
 
 ```bash
 node --test tools/account/test/
