@@ -21,6 +21,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Unbounded:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/menu.js" defer></script>
 <link rel="stylesheet" href="../assets/css/language.css">
   <script src="../assets/js/locale-web.js" defer></script>
   <script type="module" src="../assets/js/language.js"></script>
@@ -41,7 +42,21 @@
         <a href="#faq">FAQ</a>
       </nav>
       <a class="lang" href="../" hreflang="ru" lang="ru" aria-label="Русская версия">RU</a>
-      <a class="btn btn--small btn--ghost" href="https://discord.gg/GgXkaWpMhS" target="_blank" rel="noopener">Discord</a>
+      <a class="btn btn--small btn--ghost top__discord" href="https://discord.gg/GgXkaWpMhS" target="_blank" rel="noopener">Discord</a>
+      <a class="btn btn--small top__account" href="https://account.tikteam.live/en/account/">My account</a>
+      <details class="menu">
+        <summary class="menu__toggle"><span class="menu__bars" aria-hidden="true"></span><span class="sr-only">Menu</span></summary>
+        <div class="menu__panel">
+          <nav class="wrap menu__nav" aria-label="Menu">
+            <a href="#how">How it works</a>
+            <a href="#modules">Modules</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#faq">FAQ</a>
+            <a class="btn btn--small menu__account" href="https://account.tikteam.live/en/account/">My account</a>
+            <a class="btn btn--small btn--ghost" href="https://discord.gg/GgXkaWpMhS" target="_blank" rel="noopener">Discord</a>
+          </nav>
+        </div>
+      </details>
     </div>
   </header>
 
@@ -54,9 +69,11 @@
           <p class="lead">TikTeam turns TikTok LIVE gifts, likes and follows into in-game actions
             and on-stream video effects. One Windows app — several games and overlays.</p>
           <div class="hero__cta">
-            <a class="btn" href="#modules">See modules</a>
-            <a class="btn btn--ghost" href="#how">How it works</a>
+            <a class="btn" href="https://github.com/etologin/Tikteam-site/releases/download/client-v1.2.27/TikTeam.Setup.exe">Download for Windows</a>
+            <a class="btn" href="https://account.tikteam.live/en/account/">Create an account</a>
+            <a class="btn btn--ghost" href="https://account.tikteam.live/billing/">Subscriptions (Russian)</a>
           </div>
+          <p class="hero__note">TikTeam 1.2.27 for Windows 10/11 (64-bit). The installer is 155 MB; installation requires internet. Choose the installation folder and Desktop or Start menu shortcuts. Updates are checked automatically. Paid modules require an active subscription. Subscriptions are available through Paddle. <a href="https://updates.tikteam.live/TikTeam.Setup.exe">Alternative download</a>. <a href="https://github.com/etologin/Tikteam-site/releases/download/client-v1.2.26/TikTeam-Silero-Kazakh-win-x64.zip">Download Kazakh voices for TTS</a>.</p>
         </div>
 
         <div class="phone" aria-hidden="true">
@@ -195,7 +212,8 @@
             <span class="status status--soon">Coming soon</span>
           </article>
         </div>
-        <p class="pricing__note">Prices in US dollars. The final amount, including your country's taxes, is shown at checkout.
+        <p><a class="btn" href="https://account.tikteam.live/billing/">Choose modules and subscribe (Russian)</a></p>
+        <p class="pricing__note">Subscriptions are available through Paddle. Prices in US dollars. The final amount, including your country's taxes, is shown at checkout.
           Payments are processed by Paddle.com. See our <a href="refunds/">Refund Policy</a>.</p>
       </div>
     </section>
@@ -245,7 +263,7 @@
         </details>
         <details>
           <summary>When can I try it?</summary>
-          <p>We're in closed beta. Join our Discord for news and beta invites.</p>
+          <p>Download the Windows app, create an account on your <a href="https://account.tikteam.live/en/account/">account page</a>, and choose a subscription on the <a href="https://account.tikteam.live/billing/">checkout page (Russian)</a>. Check the module you need in the app before buying. Join our Discord for news and help.</p>
         </details>
       </div>
     </section>
@@ -269,6 +287,7 @@
         <span class="brand__name">Tik<span class="grad">Team</span></span>
         <p>© 2026 TikTeam</p>
         <p class="foot__links">
+          <a href="https://account.tikteam.live/en/account/">My account</a>
           <a href="terms/">Terms</a>
           <a href="refunds/">Refunds</a>
           <a href="privacy/">Privacy</a>

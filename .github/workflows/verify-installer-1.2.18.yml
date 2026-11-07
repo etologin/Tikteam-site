@@ -1,0 +1,44 @@
+name: Independently verify TikTeam installer 1.2.18
+
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/verify-installer-1.2.18.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tikteam-defender-installer-1.2.18
+  cancel-in-progress: false
+
+jobs:
+  defender:
+    if: github.repository == 'etologin/Tikteam-site' && github.ref == 'refs/heads/main'
+    runs-on: windows-2025
+    timeout-minutes: 10
+    steps:
+      - name: Scan the exact installer without executing it or changing protection
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $ProgressPreference = 'SilentlyContinue'
+          $expected = '366932B4468241A6DC0AA622AEA5C823AF17C6CDC55A1397319A4A57DF2E0E78'
+          $status = Get-MpComputerStatus
+          if (-not $status.AMServiceEnabled -or -not $status.AntivirusEnabled) { throw 'Defender is unavailable' }
+          Update-MpSignature
+          $status = Get-MpComputerStatus
+          $file = Join-Path $env:RUNNER_TEMP 'TikTeam.Setup.exe'
+          Invoke-WebRequest -UseBasicParsing -MaximumRedirection 0 -Uri 'https://updates.tikteam.live/candidates/setup-1.2.18/TikTeam.Setup.exe' -OutFile $file
+          if ((Get-Item -LiteralPath $file).Length -ne 162858849 -or (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash -ne $expected) { throw 'Installer pin mismatch' }
+          Set-Content -LiteralPath $file -Stream Zone.Identifier -Value "[ZoneTransfer]`r`nZoneId=3`r`n" -Encoding ASCII
+          $scanner = 'C:\ProgramData\Microsoft\Windows Defender\Platform\CurrentVersion\MpCmdRun.exe'
+          if (-not (Test-Path -LiteralPath $scanner)) { $scanner = Join-Path $env:ProgramFiles 'Windows Defender\MpCmdRun.exe' }
+          $output = & $scanner -Scan -ScanType 3 -File $file -DisableRemediation 2>&1 | Out-String
+          $code = $LASTEXITCODE
+          Write-Output $output
+          if ($code -ne 0 -or $output -notmatch 'found no threats') { throw 'Defender did not return a clean scan' }
+          if ((Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash -ne $expected) { throw 'Installer changed during scan' }
+          $result = [ordered]@{ Passed=$true; Sha256=$expected; Bytes=162858849; InternetZoneMarked=$true; AntivirusEnabled=$status.AntivirusEnabled; RealTimeProtectionEnabled=$status.RealTimeProtectionEnabled; SignatureVersion=$status.AntivirusSignatureVersion; EngineVersion=$status.AMEngineVersion; CandidateExecuted=$false; ProtectionSettingsChanged=$false }
+          Write-Output ('TIKTEAM_DEFENDER_RESULT=' + ($result | ConvertTo-Json -Compress))

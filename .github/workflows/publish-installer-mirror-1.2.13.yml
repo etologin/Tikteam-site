@@ -1,0 +1,70 @@
+name: Publish verified TikTeam 1.2.13 installer mirror
+
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/publish-installer-mirror-1.2.13.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tikteam-installer-mirror-1.2.13
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.repository == 'etologin/Tikteam-site' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - name: Download the existing public installer and verify its release pin
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --show-error --silent --proto '=https' --tlsv1.2 \
+            --connect-timeout 15 --max-time 300 --retry 2 \
+            --output TikTeam.Setup.exe https://updates.tikteam.live/TikTeam.Setup.exe
+          test "$(stat -c %s TikTeam.Setup.exe)" = 162781531
+          printf '%s  %s\n' \
+            fc4363b2c4b5f4a1fdc00a33a18ef038514d0529ab736f593ed3b501057862f7 \
+            TikTeam.Setup.exe | sha256sum --check --strict
+
+      - name: Publish the verified binary without replacing an existing asset
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: etologin/Tikteam-site
+          RELEASE_TAG: client-v1.2.13
+        run: |
+          set -euo pipefail
+          cat > release-notes.md <<'NOTES'
+          TikTeam 1.2.13 for Windows. Mirror of the existing public installer.
+
+          Size: 162781531 bytes.
+          SHA256: fc4363b2c4b5f4a1fdc00a33a18ef038514d0529ab736f593ed3b501057862f7
+
+          Original: https://updates.tikteam.live/TikTeam.Setup.exe
+          Website: https://tikteam.live/
+          NOTES
+          if ! gh release view "$RELEASE_TAG" --json tagName > /dev/null; then
+            gh release create "$RELEASE_TAG" --target "$GITHUB_SHA" --draft \
+              --title 'TikTeam 1.2.13 — Windows' --notes-file release-notes.md
+          fi
+          gh release view "$RELEASE_TAG" --json assets,isDraft > release.json
+          if ! jq -e 'any(.assets[]; .name == "TikTeam.Setup.exe")' release.json > /dev/null; then
+            gh release upload "$RELEASE_TAG" TikTeam.Setup.exe
+          fi
+          mkdir verified-roundtrip
+          gh release download "$RELEASE_TAG" --pattern TikTeam.Setup.exe --dir verified-roundtrip
+          test "$(stat -c %s verified-roundtrip/TikTeam.Setup.exe)" = 162781531
+          printf '%s  %s\n' \
+            fc4363b2c4b5f4a1fdc00a33a18ef038514d0529ab736f593ed3b501057862f7 \
+            verified-roundtrip/TikTeam.Setup.exe | sha256sum --check --strict
+          if jq -e '.isDraft' release.json > /dev/null; then
+            gh release edit "$RELEASE_TAG" --draft=false --latest=false
+          fi
+

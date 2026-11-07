@@ -14,6 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Unbounded:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../assets/css/site.css">
+  <script src="../../assets/js/menu.js" defer></script>
 <link rel="stylesheet" href="../../assets/css/language.css">
   <script src="../../assets/js/locale-web.js" defer></script>
   <script type="module" src="../../assets/js/language.js"></script>
@@ -30,7 +31,19 @@
         <a href="../#faq">FAQ</a>
       </nav>
       <a class="lang" href="../../refunds/" hreflang="ru" lang="ru" aria-label="Русская версия">RU</a>
-      <a class="btn btn--small btn--ghost" href="https://discord.gg/GgXkaWpMhS" target="_blank" rel="noopener">Discord</a>
+      <a class="btn btn--small btn--ghost top__discord" href="https://discord.gg/GgXkaWpMhS" target="_blank" rel="noopener">Discord</a>
+      <a class="btn btn--small top__account" href="https://account.tikteam.live/en/account/">My account</a>
+      <details class="menu">
+        <summary class="menu__toggle"><span class="menu__bars" aria-hidden="true"></span><span class="sr-only">Menu</span></summary>
+        <div class="menu__panel">
+          <nav class="wrap menu__nav" aria-label="Menu">
+            <a href="../#modules">Modules</a>
+            <a href="../#faq">FAQ</a>
+            <a class="btn btn--small menu__account" href="https://account.tikteam.live/en/account/">My account</a>
+            <a class="btn btn--small btn--ghost" href="https://discord.gg/GgXkaWpMhS" target="_blank" rel="noopener">Discord</a>
+          </nav>
+        </div>
+      </details>
     </div>
   </header>
 
@@ -95,6 +108,7 @@
         <span class="brand__name">Tik<span class="grad">Team</span></span>
         <p>© 2026 TikTeam</p>
         <p class="foot__links">
+          <a href="https://account.tikteam.live/en/account/">My account</a>
           <a href="../terms/">Terms</a>
           <a href="../refunds/">Refunds</a>
           <a href="../privacy/">Privacy</a>

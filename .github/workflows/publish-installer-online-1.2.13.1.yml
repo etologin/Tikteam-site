@@ -1,0 +1,21 @@
+name: Withdraw installer 1.2.13.1 pending security review
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/publish-installer-online-1.2.13.1.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  withdraw:
+    if: github.repository == 'etologin/Tikteam-site' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Keep the reported binary private pending review
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: etologin/Tikteam-site
+        run: gh release edit setup-v1.2.13.1 --draft=true

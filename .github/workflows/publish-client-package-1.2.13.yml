@@ -1,0 +1,70 @@
+name: Publish verified TikTeam 1.2.13 package mirror
+
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/publish-client-package-1.2.13.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tikteam-client-package-mirror-1.2.13
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.repository == 'etologin/Tikteam-site' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - name: Download the existing public installer and verify its release pin
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --show-error --silent --proto '=https' --tlsv1.2 \
+            --connect-timeout 15 --max-time 600 --retry 2 \
+            --output client-0d83764f4932e42f6c7cf8f0fc261f7162eefd70e7d493c045cc8cdb9a1e3ed0.zip https://updates.tikteam.live/packages/0d83764f4932e42f6c7cf8f0fc261f7162eefd70e7d493c045cc8cdb9a1e3ed0.zip
+          test "$(stat -c %s client-0d83764f4932e42f6c7cf8f0fc261f7162eefd70e7d493c045cc8cdb9a1e3ed0.zip)" = 827833272
+          printf '%s  %s\n' \
+            0d83764f4932e42f6c7cf8f0fc261f7162eefd70e7d493c045cc8cdb9a1e3ed0 \
+            client-0d83764f4932e42f6c7cf8f0fc261f7162eefd70e7d493c045cc8cdb9a1e3ed0.zip | sha256sum --check --strict
+
+      - name: Publish the verified binary without replacing an existing asset
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: etologin/Tikteam-site
+          RELEASE_TAG: client-v1.2.13
+        run: |
+          set -euo pipefail
+          cat > release-notes.md <<'NOTES'
+          TikTeam 1.2.13 for Windows. Mirror of the existing signed public client package.
+
+          Size: 827833272 bytes.
+          SHA256: 0d83764f4932e42f6c7cf8f0fc261f7162eefd70e7d493c045cc8cdb9a1e3ed0
+
+          Original: https://updates.tikteam.live/packages/0d83764f4932e42f6c7cf8f0fc261f7162eefd70e7d493c045cc8cdb9a1e3ed0.zip
+          Website: https://tikteam.live/
+          NOTES
+          if ! gh release view "$RELEASE_TAG" --json tagName > /dev/null; then
+            gh release create "$RELEASE_TAG" --target "$GITHUB_SHA" --draft \
+              --title 'TikTeam 1.2.13 — Windows' --notes-file release-notes.md
+          fi
+          gh release view "$RELEASE_TAG" --json assets,isDraft > release.json
+          if ! jq -e 'any(.assets[]; .name == "client-0d83764f4932e42f6c7cf8f0fc261f7162eefd70e7d493c045cc8cdb9a1e3ed0.zip")' release.json > /dev/null; then
+            gh release upload "$RELEASE_TAG" client-0d83764f4932e42f6c7cf8f0fc261f7162eefd70e7d493c045cc8cdb9a1e3ed0.zip
+          fi
+          mkdir verified-roundtrip
+          gh release download "$RELEASE_TAG" --pattern client-0d83764f4932e42f6c7cf8f0fc261f7162eefd70e7d493c045cc8cdb9a1e3ed0.zip --dir verified-roundtrip
+          test "$(stat -c %s verified-roundtrip/client-0d83764f4932e42f6c7cf8f0fc261f7162eefd70e7d493c045cc8cdb9a1e3ed0.zip)" = 827833272
+          printf '%s  %s\n' \
+            0d83764f4932e42f6c7cf8f0fc261f7162eefd70e7d493c045cc8cdb9a1e3ed0 \
+            verified-roundtrip/client-0d83764f4932e42f6c7cf8f0fc261f7162eefd70e7d493c045cc8cdb9a1e3ed0.zip | sha256sum --check --strict
+          if jq -e '.isDraft' release.json > /dev/null; then
+            gh release edit "$RELEASE_TAG" --draft=false --latest=false
+          fi
+
