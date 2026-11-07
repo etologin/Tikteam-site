@@ -7,6 +7,7 @@ export const byId = (id) => document.getElementById(id);
 /** Creates an element with text content and optional class names. */
 export function el(tag, text = "", className = "") {
   const node = document.createElement(tag);
+  node.setAttribute('data-no-i18n', ''); // Dynamic copy is translated by t(); account and device data must stay literal.
   if (text) node.textContent = text;
   if (className) node.className = className;
   return node;
@@ -19,6 +20,7 @@ export function showOnly(ids, visible) {
 /** Single status line under the title; announced to screen readers. */
 export function notice(text, tone = "ok") {
   const box = byId("notice");
+  box.setAttribute('data-no-i18n','');
   if (!text) { box.hidden = true; box.textContent = ""; return; }
   box.textContent = text;
   box.className = "notice notice--" + (tone === "error" ? "error" : "ok");

@@ -43,7 +43,7 @@ test("account pages: strict CSP, no referrer, no indexing, framing guard, only o
     assert.doesNotMatch(html, /\sstyle=|\son[a-z]+=/i, page + ": no inline styles or handlers");
     const scripts = [...html.matchAll(/<script\b([^>]*)>/g)].map((m) => m[1]);
     assert.ok(scripts.length >= 2, page);
-    for (const attrs of scripts) assert.match(attrs, /src="(\.\.\/)+assets\/js\/account\/(guard|account-app|recovery-app)\.js"/, page + ": " + attrs);
+    for (const attrs of scripts) assert.match(attrs, /src="(\.\.\/)+assets\/js\/(account\/(guard|account-app|recovery-app)|locale-web|language)\.js"/, page + ": " + attrs);
     // The guard runs before anything else that could load or read the address.
     assert.ok(html.indexOf("guard.js") < html.indexOf("<link"), page + ": guard first");
   }
@@ -64,7 +64,8 @@ test("Google, checkout and portal links are only followed after validation", () 
   assert.deepEqual(assigns, ["url.href", "url.href", "url.href"]);
   assert.match(app, /const url = googleStartUrl\(answer\.url, API_ORIGIN, locale\);/);
   // The bridge language is the page's own, sent with every start (sign-in and linking).
-  assert.match(app, /const locale = pageLang\(\);\s+const answer = \(await client\.post\("\/auth\/google\/start", \{ \.\.\.body, locale \}\)\)/);
+  assert.match(app, /const locale = pageLang\(\) === "ru" \? "ru" : "en";/, "unsupported UI languages use the server's English bridge");
+  assert.match(app, /client\.post\("\/auth\/google\/start", \{ \.\.\.body, locale \}\)/);
   assert.doesNotMatch(app, /navigator\.(language|languages)/, "never the browser's language");
   assert.match(app, /const url = checkoutUrl\(/);
   assert.match(app, /const url = portalUrl\(/);

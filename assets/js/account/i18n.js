@@ -1,6 +1,8 @@
 // RU/EN strings for account pages. Server messages are never shown as-is: the UI
 // translates stable codes and states and treats unknown ones neutrally.
 
+import { pageLanguage, translateCopy } from '../language.js';
+
 const STRINGS = {
   ru: {
     "mode.mock": "Демо-режим: данные ненастоящие, оплата и письма не выполняются.",
@@ -230,12 +232,11 @@ const STATES_ON = new Set(["active"]);
 const STATES_WARN = new Set(["past_due", "paused", "payment_review", "verification_expired", "awaiting_payment", "processing", "creating", "refunded"]);
 
 export function pageLang() {
-  const value = typeof document !== "undefined" ? document.documentElement.lang : "ru";
-  return value === "en" ? "en" : "ru";
+  return pageLanguage();
 }
 
 export function t(key, values = {}, lang = pageLang()) {
-  const text = STRINGS[lang][key] ?? STRINGS.ru[key] ?? key;
+  const text = STRINGS[lang]?.[key] ?? translateCopy(STRINGS.ru[key] ?? key, lang);
   return text.replace(/\{(\w+)\}/g, (_, name) => String(values[name] ?? ""));
 }
 
@@ -244,11 +245,11 @@ export function errorText(error, lang = pageLang()) {
   if (code === "rate_limited" && Number.isFinite(error.retryAfter) && error.retryAfter > 0)
     return t("err.rate_limited_for", { seconds: error.retryAfter }, lang);
   const key = "err." + code;
-  return key in STRINGS[lang] ? t(key, {}, lang) : t("err.unexpected", {}, lang);
+  return key in STRINGS.ru ? t(key, {}, lang) : t("err.unexpected", {}, lang);
 }
 
 export function billingState(state, lang = pageLang()) {
-  const known = typeof state === "string" && ("state." + state) in STRINGS[lang];
+  const known = typeof state === "string" && ("state." + state) in STRINGS.ru;
   return {
     text: t(known ? "state." + state : "state.other", {}, lang),
     tone: STATES_ON.has(state) ? "on" : STATES_WARN.has(state) ? "warn" : "",
@@ -270,5 +271,5 @@ export function formatDate(value, lang = pageLang()) {
   if (typeof value !== "string") return "";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
-  return new Intl.DateTimeFormat(lang === "en" ? "en-GB" : "ru-RU", { dateStyle: "medium", timeStyle: "short" }).format(date);
+  return new Intl.DateTimeFormat(lang, { dateStyle: "medium", timeStyle: "short" }).format(date);
 }

@@ -1,0 +1,7 @@
+.language-picker{display:inline-flex;align-items:center;gap:8px;max-width:190px;flex-shrink:0;border:1px solid #344058;border-radius:9px;padding:5px 8px;background:#0e1421;color:#edf2ff}
+.language-picker img{object-fit:contain;flex:none}
+.language-picker select{font:inherit;font-size:13px;max-width:145px;min-width:65px;background:#0e1421;color:inherit;border:0;padding:6px 2px;cursor:pointer}
+.language-picker:focus-within{outline:2px solid #6f9cff;outline-offset:2px}
+html[dir=rtl] .top__row,html[dir=rtl] .nav{direction:rtl}
+html[dir=rtl] input[type=email],html[dir=rtl] input[type=password],html[dir=rtl] [data-user-content]{direction:ltr;text-align:start}
+@media(max-width:760px){.language-picker{max-width:140px}.language-picker select{max-width:95px}.top__row{flex-wrap:wrap;row-gap:9px}}

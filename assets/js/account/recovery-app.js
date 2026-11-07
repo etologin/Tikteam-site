@@ -4,6 +4,7 @@
 // so mail scanners that fetch links cannot use it up.
 
 import { MODE, API_BASE, createTransport } from "./config.js";
+import { localizationReady } from "../language.js";
 import { createClient } from "./api.js";
 import { recoveryLink } from "./urls.js";
 import { t, errorText } from "./i18n.js";
@@ -15,6 +16,7 @@ const take = typeof window.tikteamTakeRecovery === "function" ? window.tikteamTa
 let link = recoveryLink(take());
 let client = null;
 
+await localizationReady;
 start();
 
 function start() {

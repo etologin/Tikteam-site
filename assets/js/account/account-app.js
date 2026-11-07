@@ -3,6 +3,7 @@
 // and billing only once the email is confirmed (the server refuses them with email_unconfirmed).
 
 import { MODE, API_ORIGIN, API_BASE, CHECKOUT_ORIGIN, createTransport } from "./config.js";
+import { localizationReady } from "../language.js";
 import { ApiError, createClient } from "./api.js";
 import { checkoutUrl, portalUrl, googleStartUrl } from "./urls.js";
 import { dashboardPlan } from "./dashboard.js";
@@ -18,7 +19,9 @@ let checkoutOpened = false;
 // Answer of GET /auth/google/config: true, false, or null while unknown. Only true shows Google.
 let googleEnabled = null;
 
+await localizationReady;
 start();
+document.addEventListener('tikteam-language-changed',()=>{if(data?.account)renderDashboard();});
 
 function start() {
   wireRevealButtons();
@@ -280,7 +283,7 @@ function wireForms() {
  * @param {{currentPassword?: string}} body {} to sign in, {currentPassword} to link this account
  */
 async function openGoogle(body) {
-  const locale = pageLang();
+  const locale = pageLang() === "ru" ? "ru" : "en"; // Server bridge supports RU/EN; the site's own selection survives the return.
   const answer = (await client.post("/auth/google/start", { ...body, locale })).body ?? {};
   const url = googleStartUrl(answer.url, API_ORIGIN, locale);
   // A website start never carries a poll token: that capability belongs to the app alone.
