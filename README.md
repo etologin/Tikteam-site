@@ -2,11 +2,9 @@
 
 Static site for TikTeam: Russian at `/`, English at `/en/`. Plain HTML and CSS, no build step.
 
-Localization work in this branch is not a public release. The header offers the same 32
-languages as the desktop app, using bundled dictionaries without a translation service.
-The dictionaries are still being completed; do not publish this branch as fully translated
-until the desktop localization coverage check passes. `assets/js/language.js` saves the
-choice locally, preserves form input, and passes the language to hosted account links.
+The header offers the same 32 languages as the desktop app, using bundled dictionaries.
+`assets/js/language.js` saves the choice locally, preserves form input, and passes the
+language to hosted account links. Check the desktop catalog coverage before publishing.
 The language dictionaries, manifest and flags are synchronized by the desktop repository's
 `tools/localization/sync-site.py`; edit source catalogs there, not generated `assets/i18n` files.
 

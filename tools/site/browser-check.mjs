@@ -50,6 +50,7 @@ const profile = mkdtempSync(join(tmpdir(), "tikteam-site-check-"));
 const child = spawn(browser, ["--headless=new", "--remote-debugging-port=0", `--user-data-dir=${profile}`, "--no-first-run",
   "--no-default-browser-check", "--disable-extensions", "--disable-sync", "about:blank"], { stdio: "ignore" });
 let failures = 0;
+let closeBrowser = async () => {};
 const check = (ok, message) => { console.log((ok ? "PASS " : "FAIL ") + message); if (!ok) failures++; };
 
 try {
@@ -73,6 +74,16 @@ try {
     if (msg.id && pending.has(msg.id)) { const p = pending.get(msg.id); pending.delete(msg.id); msg.error ? p.reject(new Error(msg.error.message)) : p.resolve(msg.result); }
   });
   const send = (method, params = {}) => new Promise((resolve, reject) => { const n = ++id; pending.set(n, { resolve, reject }); ws.send(JSON.stringify({ id: n, method, params })); });
+  closeBrowser = async () => {
+    try {
+      if (ws.readyState === WebSocket.OPEN) {
+        const disconnected = new Promise(resolve => ws.addEventListener("close", resolve, { once: true }));
+        await Promise.race([send("Browser.close"), disconnected, sleep(1500)]);
+      }
+    } finally {
+      ws.close();
+    }
+  };
   const run = async (body) => {
     const r = await send("Runtime.evaluate", { expression: `(async () => { const wait = (ms) => new Promise((r) => setTimeout(r, ms));
       const shown = (el) => !!el && getComputedStyle(el).display !== "none" && el.getBoundingClientRect().width > 0; ${body} })()`, awaitPromise: true, returnByValue: true });
@@ -158,11 +169,12 @@ try {
       if(width===375 || width===1280)await shot('localized-'+language+'-'+width);
     }
   }
-  ws.close();
 } catch (error) {
   failures++;
   console.log("FAIL " + error.message);
 } finally {
+  // On Windows, closing only the original spawn handle can leave Chromium running.
+  try { await closeBrowser(); } catch { /* The process may already have exited. */ }
   child.kill();
   server.close();
   await sleep(300);

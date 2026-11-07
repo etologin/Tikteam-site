@@ -67,6 +67,21 @@ test("home pages preserve the published installer and hosted subscription links"
   assert.ok(en.includes('https://account.tikteam.live/billing/'));
 });
 
+test("home pages and the 32 language dictionaries consistently use Battle Overlay", () => {
+  for (const page of ["index.html", "en/index.html"]) {
+    const html = read(page);
+    assert.equal([...html.matchAll(/<h3>Battle Overlay<\/h3>/g)].length, 2, page);
+    assert.doesNotMatch(html, /TikTok Overlay/i, page);
+  }
+  const languages = JSON.parse(read("assets/i18n/languages.json"));
+  assert.equal(languages.length, 32);
+  for (const { code } of languages) {
+    const dictionary = read(`assets/i18n/${code}.js`);
+    assert.doesNotMatch(dictionary, /TikTok Overlay/i, code);
+    if (code !== "ru") assert.match(dictionary, /Battle Overlay/, code);
+  }
+});
+
 /** File a relative link of a page points to; directory links mean their index.html. */
 function target(page, path) {
   if (!path) return join(SITE, page);
