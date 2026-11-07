@@ -94,22 +94,73 @@ try {
   const open = async (path) => { await send("Page.navigate", { url: base + path }); await sleep(900); };
   await send("Page.enable");
 
+  // Offline localization must never reload forms, rewrite user input or change OAuth's supported locales.
+  await open('/account/?lang=ru#language-fixture');
+  const languageNavigation=navigations;
+  let localized=await run(`
+    const selector=document.querySelector('.language-picker select');
+    $('login-email').value='Настройки';$('login-password').value='fixture-password';
+    selector.value='en';selector.dispatchEvent(new Event('change'));await wait(400);
+    return { count:selector.options.length,code:document.documentElement.lang,email:$('login-email').value,
+      password:$('login-password').value,hash:location.hash,stored:localStorage.getItem('tikteam.ui.language') };
+  `);
+  check(localized.count===32 && localized.code==='en' && localized.stored==='en','32 languages; selection is applied and saved');
+  check(localized.email==='Настройки' && localized.password==='fixture-password' && localized.hash==='#language-fixture' && navigations===languageNavigation,
+    'language changes preserve form values and URL fragments without reloading');
+  localized=await run(`const s=document.querySelector('.language-picker select');s.value='ar';s.dispatchEvent(new Event('change'));await wait(400);
+    return {code:document.documentElement.lang,dir:document.documentElement.dir,email:$('login-email').value};`);
+  check(localized.code==='ar' && localized.dir==='rtl' && localized.email==='Настройки','Arabic UI direction leaves user input unchanged');
+  localized=await run(`const s=document.querySelector('.language-picker select');s.value='kk';s.dispatchEvent(new Event('change'));await wait(400);
+    $('google-login').click();await wait(400);return {code:document.documentElement.lang,dir:document.documentElement.dir,sent:mock.lastGoogleStart};`);
+  check(localized.code==='kk' && localized.dir==='ltr' && localized.sent?.locale==='en','Kazakh interface preserves the supported Google bridge locale');
+  await open('/account/');
+  localized=await run(`return {code:document.documentElement.lang,selected:document.querySelector('.language-picker select').value};`);
+  check(localized.code==='kk' && localized.selected==='kk','chosen language survives navigation and reload');
+  await open('/en/account/');
+  localized=await run(`return {code:document.documentElement.lang,selected:document.querySelector('.language-picker select').value};`);
+  check(localized.code==='kk' && localized.selected==='kk','saved language also survives navigation through an English source page');
+  await open('/account/?lang=ru');
+  localized=await run(`
+    const doc=document.implementation.createHTMLDocument('fixture');
+    const label=doc.createElement('span');label.textContent='Настройки';doc.body.append(label);
+    const viewer=doc.createElement('span');viewer.className='viewer-name';viewer.textContent='Настройки';doc.body.append(viewer);
+    const editable=doc.createElement('div');editable.contentEditable='true';editable.textContent='Настройки';doc.body.append(editable);
+    const input=doc.createElement('input');input.value='Настройки';input.placeholder='Настройки';doc.body.append(input);
+    const option=doc.createElement('option');option.textContent='Настройки';doc.body.append(option);
+    const count=doc.createElement('span');count.textContent='125 мон.';doc.body.append(count);
+      const preservedClasses=['tg-nick','tg-sub','rl-nick','auc-nick','gg-gift','gb-gift','gb-tl','rl-label','lb-title','wc-title','mv-name'];
+      const authored=preservedClasses.map(name=>{const e=doc.createElement('span');e.className=name;e.textContent='Настройки';e.title='Настройки';doc.body.append(e);return e;});
+    const runtime=globalThis.TikTeamLocalization.create(doc,{code:'en',languages:[{code:'ru'},{code:'en'}],dictionary:{'Настройки':'Settings','# мон.':'# coins'}});
+    await runtime.start();
+    const translated={label:label.textContent,viewer:viewer.textContent,editable:editable.textContent,input:input.value,placeholder:input.placeholder,
+        optionText:option.textContent,optionValue:option.value,count:count.textContent,
+        authored:authored.every(e=>e.textContent==='Настройки' && e.title==='Настройки')};
+    await runtime.select('ru');runtime.dispose();return {translated,restored:label.textContent};
+  `);
+  check(localized.translated.label==='Settings' && localized.translated.count==='125 coins' && localized.restored==='Настройки',
+    'widget runtime translates static copy and numeric placeholders reversibly');
+  check(localized.translated.viewer==='Настройки' && localized.translated.editable==='Настройки' && localized.translated.input==='Настройки',
+    'widget runtime protects viewer names, editable text and input values');
+  check(localized.translated.optionText==='Settings' && localized.translated.optionValue==='Настройки' && localized.translated.placeholder==='Settings',
+    'translated options preserve saved values; only input hints are translated');
+  check(localized.translated.authored,'viewer greetings, prize names and custom overlay titles stay unchanged, including tooltips');
+
   // Visitor: Google appears because the server's config says enabled; starting never navigates in mock.
   // Each page starts the bridge in its own language, for sign-in and for linking alike.
   for (const [path, label, locale] of [["/account/", "Войти через Google", "ru"], ["/en/account/", "Sign in with Google", "en"]]) {
-    await open(path);
+    await open(path+'?lang='+locale);
     const r = await run(`return { signin: visible('google-signin'), label: $('google-login').querySelector('.gsi-material-button-contents').textContent, auth: visible('view-auth') };`);
     check(r.auth && r.signin && r.label === label, `${path}: Google sign-in shown from the server's config`);
     const start = await run(`$('google-login').click(); await wait(500); return { sent: mock.lastGoogleStart, notice: $('notice').textContent };`);
     check(start.sent?.locale === locale && start.sent?.link === false && start.notice.includes("api.mock.invalid"),
       `${path}: sign-in starts the bridge with locale ${locale} and the link passes the ${locale} check`);
-    await open(path); // a fresh demo server: nobody signed in yet
+    await open(path+'?lang='+locale); // a fresh demo server: nobody signed in yet
     const link = await run(`await signIn(); $('google-link-password').value = mock.demo.password; submit('form-google-link'); await wait(500);
       return { sent: mock.lastGoogleStart, notice: $('notice').textContent, cleared: $('google-link-password').value === '' };`);
     check(link.sent?.locale === locale && link.sent?.link === true && link.notice.includes("api.mock.invalid") && link.cleared,
       `${path}: linking sends the password with locale ${locale}`);
   }
-  await open("/account/");
+  await open("/account/?lang=ru");
   const before = navigations;
   let r = await run(`$('google-login').click(); await wait(500); return { notice: $('notice').textContent, signedIn: mock.currentEmail() };`);
   check(r.notice.includes("api.mock.invalid") && !/[0-9A-Fa-f]{64}/.test(r.notice), "Google start: only the host is shown, never the ticket");
@@ -162,6 +213,8 @@ try {
   child.kill();
   server.close();
   await sleep(300);
+  if (!resolve(profile).startsWith(resolve(tmpdir()) + "/tikteam-browser-check-") && !resolve(profile).startsWith(resolve(tmpdir()) + "\\tikteam-browser-check-")) throw Error("Unexpected browser profile cleanup path");
+  if (resolve(OUT) !== resolve(SITE, ".preview", "browser-check")) throw Error("Unexpected test output cleanup path");
   try { rmSync(profile, { recursive: true, force: true }); } catch { /* the browser may still hold files */ }
   rmSync(OUT, { recursive: true, force: true });
 }

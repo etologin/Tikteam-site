@@ -81,7 +81,9 @@ try {
   };
   const open = async (path, width) => {
     await send("Emulation.setDeviceMetricsOverride", { width, height: 900, deviceScaleFactor: 1, mobile: width < 700 });
-    await send("Page.navigate", { url: base + path });
+    const address=new URL(base+path);
+    if(!address.searchParams.has('lang'))address.searchParams.set('lang',address.pathname.startsWith('/en/')?'en':'ru');
+    await send("Page.navigate", { url: address.href });
     await sleep(700);
     await run(`await document.fonts.ready; return true;`);
   };
@@ -138,6 +140,24 @@ try {
     check(!r.afterEscape && r.focus, `${path} @375: Escape closes the menu and returns focus to its button`);
     check(!r.afterOutside, `${path} @375: a tap outside closes the menu`);
   }
+  // Longer translations and RTL must fit the same header and preserve the portal language.
+  for(const language of ['de','fr','kk','ar']){
+    for(const width of [1280,700,375]){
+      await open('/?lang='+language,width);
+      const r=await run(`return {code:document.documentElement.lang,dir:document.documentElement.dir,
+        overflow:document.documentElement.scrollWidth>innerWidth,
+        row:(()=>{const e=document.querySelector('.top__row');return e.scrollWidth>e.clientWidth+1;})(),
+        choices:document.querySelector('.language-picker select').options.length,
+        heading:document.querySelector('.hero h1').textContent,
+        expectedHeading:globalThis.TikTeamSiteDictionaries[${JSON.stringify(language)}]['TikTeam — зрители играют в ваш эфир'].replace(/^TikTeam\\s*[—–-]\\s*/u,''),
+        account:new URL(document.querySelector('.top__account').href).searchParams.get('lang')};`);
+      check(r.code===language && r.choices===32 && r.account===language,language+' @'+width+': selected language and portal link agree');
+      check(!r.overflow && !r.row,language+' @'+width+': localized header fits');
+      check(r.dir===(language==='ar'?'rtl':'ltr'),language+' @'+width+': correct reading direction');
+      check(r.heading===r.expectedHeading,language+' @'+width+': heading is translated as a complete sentence');
+      if(width===375 || width===1280)await shot('localized-'+language+'-'+width);
+    }
+  }
   ws.close();
 } catch (error) {
   failures++;
@@ -146,7 +166,9 @@ try {
   child.kill();
   server.close();
   await sleep(300);
-  try { rmSync(profile, { recursive: true, force: true }); } catch { /* the browser may still hold files */ }
+  const resolvedProfile=resolve(profile),tempRoot=resolve(tmpdir());
+  if(dirname(resolvedProfile)!==tempRoot || !resolvedProfile.startsWith(join(tempRoot,'tikteam-site-check-')))throw Error('Unexpected browser profile path');
+  try { rmSync(resolvedProfile, { recursive: true, force: true }); } catch { /* the browser may still hold files */ }
 }
 console.log(failures ? `browser-check: ${failures} failed` : "browser-check: all passed");
 process.exit(failures ? 1 : 0);

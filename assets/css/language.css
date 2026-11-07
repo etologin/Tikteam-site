@@ -3,5 +3,15 @@
 .language-picker select{font:inherit;font-size:13px;max-width:145px;min-width:65px;background:#0e1421;color:inherit;border:0;padding:6px 2px;cursor:pointer}
 .language-picker:focus-within{outline:2px solid #6f9cff;outline-offset:2px}
 html[dir=rtl] .top__row,html[dir=rtl] .nav{direction:rtl}
+html[dir=rtl] .brand{margin-right:0;margin-left:auto}
+html[dir=rtl] .skip{left:auto;right:-9999px}
+html[dir=rtl] .skip:focus{right:16px}
+html[dir=rtl] .checks li{padding-left:0;padding-right:34px}
+html[dir=rtl] .checks li::before{left:auto;right:0}
+html[dir=rtl] .checks li::after{left:auto;right:7px}
+html[dir=rtl] .faq summary{padding-left:40px;padding-right:0}
+html[dir=rtl] .faq summary::after{right:auto;left:4px}
+html[dir=rtl] .legal ul,html[dir=rtl] .plan ul{padding-left:0;padding-right:22px}
+html[dir=rtl] .note{border-left:0;border-right:3px solid var(--violet);border-radius:12px 0 0 12px}
 html[dir=rtl] input[type=email],html[dir=rtl] input[type=password],html[dir=rtl] [data-user-content]{direction:ltr;text-align:start}
 @media(max-width:760px){.language-picker{max-width:140px}.language-picker select{max-width:95px}.top__row{flex-wrap:wrap;row-gap:9px}}

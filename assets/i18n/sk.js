@@ -1,1 +1,1 @@
-globalThis.TikTeamSiteDictionaries ??= {}; globalThis.TikTeamSiteDictionaries["sk"] = {};
+globalThis.TikTeamSiteDictionaries ??= {}; globalThis.TikTeamSiteDictionaries["sk"] = {"Игры": "Hry", "Отмена": "Zrušiť", "Удалить": "Odstrániť", "Вход": "Prihlásenie", "Войти": "Prihlásiť sa", "Пароль": "Heslo", "Регистрация": "Registrácia", "Создать аккаунт": "Vytvoriť účet", "Скрыть": "Skryť", "Показать": "Zobraziť"};

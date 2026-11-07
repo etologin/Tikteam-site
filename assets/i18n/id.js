@@ -1,1 +1,1 @@
-globalThis.TikTeamSiteDictionaries ??= {}; globalThis.TikTeamSiteDictionaries["id"] = {};
+globalThis.TikTeamSiteDictionaries ??= {}; globalThis.TikTeamSiteDictionaries["id"] = {"Игры": "Game", "Отмена": "Batal", "Удалить": "Hapus", "Вход": "Masuk", "Войти": "Masuk", "Пароль": "Kata sandi", "Регистрация": "Pendaftaran", "Создать аккаунт": "Buat akun", "Скрыть": "Sembunyikan", "Показать": "Tampilkan"};

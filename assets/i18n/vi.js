@@ -1,1 +1,1 @@
-globalThis.TikTeamSiteDictionaries ??= {}; globalThis.TikTeamSiteDictionaries["vi"] = {};
+globalThis.TikTeamSiteDictionaries ??= {}; globalThis.TikTeamSiteDictionaries["vi"] = {"Игры": "Trò chơi", "Отмена": "Hủy", "Удалить": "Xóa", "Вход": "Đăng nhập", "Войти": "Đăng nhập", "Пароль": "Mật khẩu", "Регистрация": "Đăng ký", "Создать аккаунт": "Tạo tài khoản", "Скрыть": "Ẩn", "Показать": "Hiện"};

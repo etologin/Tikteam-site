@@ -41,23 +41,30 @@ test("account links go only to the hosted account area, in the page's language",
     const html = read(page);
     const accountLinks = hrefs(html).filter((h) => /account/i.test(h) && /^https?:/.test(h));
     assert.ok(accountLinks.length >= 3, page);
-    for (const href of accountLinks) assert.equal(href, ACCOUNT[lang], `${page}: ${href}`);
+    const billing='https://account.tikteam.live/billing/';
+    for (const href of accountLinks) assert.ok([ACCOUNT[lang],billing].includes(href), `${page}: ${href}`);
     // No embedding and no sign-in forms on the main site; no test or local hosts.
     assert.doesNotMatch(html, /<iframe|<form|<input/i, page + ": no embedded account or forms");
     assert.doesNotMatch(html, /localhost|127\.0\.0\.1|web-test|api-test|api\.tikteam\.live|(?<!account\.)tikteam\.live\/(en\/)?account/i, page + ": no old or test hosts");
-    // Nothing to buy or download yet (links to Paddle's legal pages are fine).
-    assert.deepEqual(hrefs(html).filter((h) => /checkout|\/download|\.exe$|\.zip$|\.msi$/i.test(h)), [], page + ": no purchase or download links");
+    // Public downloads already exist; localization must keep their trusted destinations.
+    for(const href of hrefs(html).filter(h=>/\/download|\.exe$|\.zip$|\.msi$/i.test(h))){
+      const url=new URL(href);
+      assert.equal(url.protocol,'https:',page+': HTTPS download');
+      assert.ok((url.hostname==='github.com' && url.pathname.startsWith('/etologin/Tikteam-site/releases/download/')) ||
+        (url.hostname==='updates.tikteam.live' && url.pathname==='/TikTeam.Setup.exe'),page+': known download destination');
+    }
   }
 });
 
-test("home pages say that accounts are open and purchases and streams are not", () => {
+test("home pages preserve the published installer and hosted subscription links", () => {
   const ru = read("index.html"), en = read("en/index.html");
   assert.ok(ru.includes(`<a class="btn" href="${ACCOUNT.ru}">Создать аккаунт</a>`));
   assert.ok(en.includes(`<a class="btn" href="${ACCOUNT.en}">Create an account</a>`));
-  assert.match(ru, /<p class="hero__note">Аккаунты уже открыты[^<]*Покупки и подключение эфиров пока недоступны\.<\/p>/);
-  assert.match(en, /<p class="hero__note">Accounts are open[^<]*Purchases and stream connections are not available yet\.<\/p>/);
-  assert.match(ru, /<p class="pricing__note">Покупки пока не открыты\./);
-  assert.match(en, /<p class="pricing__note">Purchases are not open yet\./);
+  const installer=html=>hrefs(html).filter(h=>h.startsWith('https://github.com/etologin/Tikteam-site/releases/download/') && h.endsWith('/TikTeam.Setup.exe'));
+  assert.equal(installer(ru).length,1);
+  assert.deepEqual(installer(en),installer(ru),'both languages download the same installer');
+  assert.ok(ru.includes('https://account.tikteam.live/billing/'));
+  assert.ok(en.includes('https://account.tikteam.live/billing/'));
 });
 
 /** File a relative link of a page points to; directory links mean their index.html. */

@@ -1,1 +1,1 @@
-globalThis.TikTeamSiteDictionaries ??= {}; globalThis.TikTeamSiteDictionaries["sv"] = {};
+globalThis.TikTeamSiteDictionaries ??= {}; globalThis.TikTeamSiteDictionaries["sv"] = {"Игры": "Spel", "Отмена": "Avbryt", "Удалить": "Ta bort", "Вход": "Inloggning", "Войти": "Logga in", "Пароль": "Lösenord", "Регистрация": "Registrering", "Создать аккаунт": "Skapa konto", "Скрыть": "Dölj", "Показать": "Visa"};

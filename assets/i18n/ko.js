@@ -1,1 +1,1 @@
-globalThis.TikTeamSiteDictionaries ??= {}; globalThis.TikTeamSiteDictionaries["ko"] = {};
+globalThis.TikTeamSiteDictionaries ??= {}; globalThis.TikTeamSiteDictionaries["ko"] = {"Игры": "게임", "Отмена": "취소", "Удалить": "삭제", "Вход": "로그인", "Войти": "로그인", "Пароль": "비밀번호", "Регистрация": "회원가입", "Создать аккаунт": "계정 만들기", "Скрыть": "숨기기", "Показать": "표시"};

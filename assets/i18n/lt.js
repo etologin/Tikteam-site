@@ -1,1 +1,1 @@
-globalThis.TikTeamSiteDictionaries ??= {}; globalThis.TikTeamSiteDictionaries["lt"] = {};
+globalThis.TikTeamSiteDictionaries ??= {}; globalThis.TikTeamSiteDictionaries["lt"] = {"Игры": "Žaidimai", "Отмена": "Atšaukti", "Удалить": "Ištrinti", "Вход": "Prisijungimas", "Войти": "Prisijungti", "Пароль": "Slaptažodis", "Регистрация": "Registracija", "Создать аккаунт": "Sukurti paskyrą", "Скрыть": "Slėpti", "Показать": "Rodyti"};
