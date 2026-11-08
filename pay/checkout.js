@@ -1,3 +1,5 @@
+import { languages } from '../assets/js/languages.js';
+
 (() => {
   'use strict';
   const status = document.getElementById('checkout-status');
@@ -7,8 +9,11 @@
   const token = window.TikTeamPaddleToken;
   const url = new URL(window.location.href);
   const values = url.searchParams.getAll('_ptxn');
+  const codes = new Set(languages.map(language => language.code));
+  const requested = /^#lang=([a-z]{2})$/.exec(url.hash)?.[1];
+  const allowedFragment = codes.has(requested);
   if (window.top !== window.self || url.origin !== 'https://tikteam.live'
-      || !['/pay', '/pay/', '/pay/index.html'].includes(url.pathname) || url.hash) {
+      || !['/pay', '/pay/', '/pay/index.html'].includes(url.pathname) || (url.hash && !allowedFragment)) {
     tell('Откройте оплату из личного кабинета TikTeam.');
     return;
   }
@@ -19,6 +24,10 @@
     tell('Ссылка оплаты неполная. Откройте существующую покупку в личном кабинете.');
     return;
   }
+  let stored;
+  try { stored = localStorage.getItem('tikteam.ui.language'); } catch { /* Storage is optional. */ }
+  const language = allowedFragment ? requested : codes.has(stored) ? stored : 'ru';
+  const paddleLanguages = new Set(['ar', 'da', 'de', 'en', 'es', 'fr', 'it', 'ja', 'ko', 'nl', 'pl', 'pt', 'ru', 'sv', 'tr']);
   tell('Открываем защищённую форму Paddle…');
   let initialized = false;
   let settled = false;
@@ -36,7 +45,7 @@
       // a customer email, account session, API key or browser-provided prices.
       window.Paddle.Initialize({
         token,
-        checkout: { settings: { displayMode: 'overlay', theme: 'dark', locale: 'ru' } },
+        checkout: { settings: { displayMode: 'overlay', theme: 'dark', locale: paddleLanguages.has(language) ? language : 'en' } },
         eventCallback: event => {
           switch (event?.name) {
             case 'checkout.loaded': tell('Проверьте сумму и условия в форме Paddle.'); break;

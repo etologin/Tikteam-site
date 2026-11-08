@@ -70,7 +70,10 @@ function picker(){
 }
 export const localizationReady=browser?(async()=>{
   const base=document.documentElement.lang==='en'?'en':'ru';
-  const requested=new URL(location.href).searchParams.get('lang');
+  const url=new URL(location.href);
+  const paymentHint=['/pay','/pay/','/pay/index.html'].includes(url.pathname)
+    ? /^#lang=([a-z]{2})$/.exec(url.hash)?.[1] : undefined;
+  const requested=paymentHint??url.searchParams.get('lang');
   const preference=stored();
   selected=codes.has(requested)?requested:(codes.has(preference)?preference:base);
   const ready=()=>document.readyState==='loading'?new Promise(resolve=>document.addEventListener('DOMContentLoaded',resolve,{once:true})):Promise.resolve();
