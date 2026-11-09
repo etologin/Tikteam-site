@@ -79,3 +79,4 @@ jobs:
           if jq -e '.isDraft' release-state.json > /dev/null; then
             gh release edit "$RELEASE_TAG" --draft=false --prerelease=false --latest=true
           fi
+          gh release view "$RELEASE_TAG" --json url --jq '.url' >> "$GITHUB_STEP_SUMMARY"
