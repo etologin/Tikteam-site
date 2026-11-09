@@ -47,4 +47,6 @@ jobs:
           if ($code -ne 0 -or $output -notmatch 'found no threats') { throw 'Defender did not return a clean scan' }
           if ((Get-FileHash -LiteralPath $file).Hash -ne $expected -or (Get-FileHash -LiteralPath $installer).Hash -ne $setupHash) { throw 'A pin changed during the scan' }
           $result = [ordered]@{Passed=$true;Sha256=$expected;SetupSha256=$setupHash;Bytes=721942466;ExtractedFiles=$count;SignatureVersion=$status.AntivirusSignatureVersion;CandidateExecuted=$false;ProtectionSettingsChanged=$false}
-          Write-Output ('TIKTEAM_DEFENDER_RESULT=' + ($result | ConvertTo-Json -Compress))
+          $proof = $result | ConvertTo-Json -Compress
+          Write-Output ('TIKTEAM_DEFENDER_RESULT=' + $proof)
+          Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value ('Defender verified the pinned TikTeam package and installer. ' + $proof)
