@@ -63,6 +63,12 @@ test("home pages preserve the published installer and hosted subscription links"
   const installer=html=>hrefs(html).filter(h=>h.startsWith('https://github.com/etologin/Tikteam-site/releases/download/') && h.endsWith('/TikTeam.Setup.exe'));
   assert.equal(installer(ru).length,1);
   assert.deepEqual(installer(en),installer(ru),'both languages download the same installer');
+  const version = installer(ru)[0].match(/\/client-v(\d+\.\d+\.\d+)\/TikTeam\.Setup\.exe$/)?.[1];
+  assert.ok(version, 'the installer URL is pinned to a release version');
+  for (const html of [ru, en]) {
+    assert.ok(html.includes('class="hero__note">TikTeam ' + version + ' '), 'the download and displayed version agree');
+    assert.ok(hrefs(html).includes('https://updates.tikteam.live/TikTeam.Setup.exe'), 'the update server remains a second download source');
+  }
   assert.ok(ru.includes('https://account.tikteam.live/billing/'));
   assert.ok(en.includes('https://account.tikteam.live/billing/'));
 });
