@@ -1,0 +1,8 @@
+.iphone { max-width: 36rem; }
+.iphone h1 { font: 700 clamp(30px, 7vw, 44px)/1.15 var(--head); }
+.iphone h2 { font-size: 22px; margin-bottom: 12px; }
+.iphone > p { color: var(--muted); margin-top: 16px; }
+.iphone .card { margin-top: 26px; }
+.iphone ol { margin: 0 0 20px; padding-left: 1.35em; }
+.iphone li + li { margin-top: 12px; }
+.iphone .btn { margin-top: 14px; white-space: normal; text-align: center; }

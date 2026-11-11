@@ -6,6 +6,7 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { runInNewContext } from "node:vm";
 
 const SITE = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const ACCOUNT = { ru: "https://account.tikteam.live/account/", en: "https://account.tikteam.live/en/account/" };
@@ -111,4 +112,25 @@ test("the menu script stays tiny and local: no storage, cookies or network", () 
   const script = readFileSync(join(SITE, "assets", "js", "menu.js"), "utf8").replace(/^\s*\/\/.*$/gm, "");
   assert.doesNotMatch(script, /localStorage|sessionStorage|indexedDB|document\.cookie|fetch\(|XMLHttpRequest|sendBeacon|innerHTML|eval\(/);
   for (const [page] of PAGES) assert.match(read(page), /<script src="(\.\.\/)*assets\/js\/menu\.js" defer><\/script>/, page);
+});
+
+test("the iPhone guide uses the public iCloud template and hands off only setup links", () => {
+  const template = "https://www.icloud.com/shortcuts/912426dc412848efbc0b953df2fe5d2f";
+  for (const page of ["iphone/index.html", "en/iphone/index.html"]) {
+    const html = read(page);
+    assert.ok(hrefs(html).includes(template), page);
+    assert.ok(hrefs(html).includes("/assets/js/iphone-setup.js"), page);
+    assert.match(html, /<meta name="referrer" content="no-referrer">/);
+  }
+  const script = read("assets/js/iphone-setup.js");
+  const go = (hash) => {
+    const calls = [];
+    runInNewContext(script, { window: { location: { hash, replace: url => calls.push(url) } } });
+    return calls;
+  };
+  const code = "ttsp1." + "a".repeat(64) + "." + "b".repeat(64);
+  assert.deepEqual(go("#" + code), ["https://api.tikteam.live/api/tikdonate/shortcuts/v1/setup#" + code]);
+  assert.deepEqual(go(""), []);
+  assert.deepEqual(go("#https://example.com/"), []);
+  assert.deepEqual(go("#" + code.replace("ttsp1.", "ttsc1.")), []);
 });
