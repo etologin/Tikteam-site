@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Connect Kaspi · TikTeam</title>
+  <link rel="stylesheet" href="/assets/css/site.css">
+  <link rel="stylesheet" href="/assets/css/account.css">
+  <link rel="stylesheet" href="/assets/css/iphone-account.css">
+  <script type="module" src="/assets/js/account/tikdonate-iphone.js"></script>
+</head>
+<body>
+  <header class="top">
+    <div class="wrap top__row">
+      <a class="brand" href="/en/account/">
+        <img class="brand__mark" src="/assets/img/mark.svg" width="36" height="36" alt="">
+        <span class="brand__name">Tik<span class="grad">Team</span></span>
+      </a>
+      <a class="lang" href="/account/iphone/" hreflang="ru">RU</a>
+    </div>
+  </header>
+  <main class="wrap section iphone-account">
+    <h1>Kaspi on iPhone</h1>
+    <div class="card">
+      <p id="state" role="status" aria-live="polite">Checking your account…</p>
+      <p id="sign-in" hidden><a class="btn" href="/en/account/">Open your account</a></p>
+      <div id="setup" hidden>
+        <label for="devices">Computer running TikDonate</label>
+        <select id="devices"></select>
+        <div class="iphone-buttons">
+          <button class="btn" type="button" id="make-qr">Create QR code</button>
+          <button class="btn btn--ghost" type="button" id="make-key">Create key</button>
+        </div>
+      </div>
+      <div id="qr-result" hidden>
+        <img id="qr-image" width="224" height="224" alt="iPhone setup QR code">
+        <p>Scan the QR code with your iPhone camera or open the link. It expires in five minutes.</p>
+        <a class="btn" id="open-link" rel="noreferrer">Open on this iPhone</a>
+        <button class="btn btn--ghost" type="button" id="copy-link">Copy link</button>
+      </div>
+      <div id="key-result" hidden>
+        <p>Copy the key and paste it when adding the shortcut. The key is shown when you create it.</p>
+        <label for="key">Setup key</label>
+        <input id="key" readonly spellcheck="false" autocomplete="off">
+        <button class="btn" type="button" id="copy-key">Copy key</button>
+        <a class="btn btn--ghost" href="https://www.icloud.com/shortcuts/912426dc412848efbc0b953df2fe5d2f" rel="noreferrer">Open Shortcuts</a>
+      </div>
+      <button class="btn btn--ghost" type="button" id="unlink" hidden>Unlink iPhone</button>
+    </div>
+    <p><a href="https://tikteam.live/en/iphone/">Setup guide</a></p>
+  </main>
+</body>
+</html>

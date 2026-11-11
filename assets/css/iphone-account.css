@@ -1,0 +1,8 @@
+.iphone-account { max-width: 38rem; }
+.iphone-account .card { margin: 20px 0; }
+.iphone-account [hidden] { display: none !important; }
+.iphone-account label { display: block; margin: 12px 0 6px; }
+.iphone-account input, .iphone-account select { width: 100%; max-width: 100%; }
+.iphone-account .btn { margin: 12px 8px 0 0; cursor: pointer; }
+.iphone-account .btn:disabled { opacity: .55; cursor: wait; }
+.iphone-account img#qr-image { margin: 16px 0 12px; image-rendering: pixelated; }

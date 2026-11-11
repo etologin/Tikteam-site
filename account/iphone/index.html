@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Подключение Kaspi · TikTeam</title>
+  <link rel="stylesheet" href="/assets/css/site.css">
+  <link rel="stylesheet" href="/assets/css/account.css">
+  <link rel="stylesheet" href="/assets/css/iphone-account.css">
+  <script type="module" src="/assets/js/account/tikdonate-iphone.js"></script>
+</head>
+<body>
+  <header class="top">
+    <div class="wrap top__row">
+      <a class="brand" href="/account/">
+        <img class="brand__mark" src="/assets/img/mark.svg" width="36" height="36" alt="">
+        <span class="brand__name">Tik<span class="grad">Team</span></span>
+      </a>
+      <a class="lang" href="/en/account/iphone/" hreflang="en">EN</a>
+    </div>
+  </header>
+  <main class="wrap section iphone-account">
+    <h1>Kaspi на iPhone</h1>
+    <div class="card">
+      <p id="state" role="status" aria-live="polite">Проверяем аккаунт…</p>
+      <p id="sign-in" hidden><a class="btn" href="/account/">Открыть личный кабинет</a></p>
+      <div id="setup" hidden>
+        <label for="devices">Компьютер с TikDonate</label>
+        <select id="devices"></select>
+        <div class="iphone-buttons">
+          <button class="btn" type="button" id="make-qr">Создать QR-код</button>
+          <button class="btn btn--ghost" type="button" id="make-key">Создать ключ</button>
+        </div>
+      </div>
+      <div id="qr-result" hidden>
+        <img id="qr-image" width="224" height="224" alt="QR-код подключения iPhone">
+        <p>Отсканируйте QR камерой iPhone или откройте ссылку. Она действует пять минут.</p>
+        <a class="btn" id="open-link" rel="noreferrer">Открыть на этом iPhone</a>
+        <button class="btn btn--ghost" type="button" id="copy-link">Скопировать ссылку</button>
+      </div>
+      <div id="key-result" hidden>
+        <p>Скопируйте ключ и вставьте его при установке команды. Ключ показывается после создания.</p>
+        <label for="key">Ключ для установки</label>
+        <input id="key" readonly spellcheck="false" autocomplete="off">
+        <button class="btn" type="button" id="copy-key">Скопировать ключ</button>
+        <a class="btn btn--ghost" href="https://www.icloud.com/shortcuts/912426dc412848efbc0b953df2fe5d2f" rel="noreferrer">Открыть «Команды»</a>
+      </div>
+      <button class="btn btn--ghost" type="button" id="unlink" hidden>Отвязать iPhone</button>
+    </div>
+    <p><a href="https://tikteam.live/iphone/">Инструкция подключения</a></p>
+  </main>
+</body>
+</html>
