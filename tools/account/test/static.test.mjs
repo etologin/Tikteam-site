@@ -12,7 +12,7 @@ const PAGES = ["account/index.html", "account/recovery/index.html", "en/account/
 const shipped = readdirSync(JS_DIR).filter((f) => f.endsWith(".js"));
 
 test("committed account scripts are the production set only", () => {
-  assert.deepEqual(shipped.sort(), ["account-app.js", "api.js", "config.js", "dashboard.js", "dom.js", "guard.js", "i18n.js", "recovery-app.js", "urls.js"]);
+  assert.deepEqual(shipped.sort(), ["account-app.js", "api.js", "config.js", "dashboard.js", "dom.js", "guard.js", "i18n.js", "recovery-app.js", "referral-card.js", "referrals.js", "tikdonate-iphone.js", "urls.js"]);
   const config = readFileSync(join(JS_DIR, "config.js"), "utf8");
   assert.match(config, /export const MODE = "disabled";/, "the committed site is in disabled mode");
   assert.match(config, /export const API_ORIGIN = "";/, "no API origin in the committed site");
@@ -23,7 +23,12 @@ test("no Web Storage, IndexedDB, cookies from script, HTML injection or eval in 
   const banned = /\b(localStorage|sessionStorage|indexedDB|document\.cookie|innerHTML|outerHTML|insertAdjacentHTML|document\.write|eval\s*\(|new Function|serviceWorker|console\.(log|info|debug))\b/;
   for (const file of shipped) {
     const source = readFileSync(join(JS_DIR, file), "utf8").replace(/^\s*\/\/.*$/gm, "");
-    assert.doesNotMatch(source, banned, file);
+    // The visitor's shareable invitation may survive the Google round trip in this tab.
+    // The only permitted storage access is the exact public-code accessor.
+    const guarded = file === "referrals.js"
+      ? source.replace("const tabStorage = () => globalThis.sessionStorage;", "")
+      : source;
+    assert.doesNotMatch(guarded, banned, file);
     // Pages may behave differently in demo mode, but never load demo files themselves.
     assert.doesNotMatch(source, /mock-(server|panel)|tools\/account/i, file + " must not load demo code");
   }

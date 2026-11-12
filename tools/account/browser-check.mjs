@@ -199,6 +199,20 @@ try {
   r = await run(`mock.setConfirmed(true, mock.demo.email); mock.log.length = 0; $('profile-recheck').click(); await wait(700); return { log: [...mock.log], cards: cards() };`);
   const firstFeature = r.log.findIndex((l) => /devices|billing/.test(l));
   check(r.log.indexOf("GET /account") >= 0 && r.log.indexOf("GET /account") < firstFeature && r.cards.length === 5, "confirmed: profile first, then computers and billing");
+  r = await run(`const code=document.querySelector('[data-invite-code]');const style=getComputedStyle(code);
+    return { value:code.textContent, hidden:code.hidden, retry:document.querySelector('[data-invite-retry]').hidden,
+      color:style.backgroundImage, animation:style.animationName, fontSize:parseFloat(style.fontSize) };`);
+  check(r.value === "Q2WF9R" && !r.hidden && r.retry && r.color.includes("linear-gradient") &&
+    r.animation === "invitation-rgb" && r.fontSize >= 30, "confirmed: the RGB invitation code appears without pressing a button");
+  await send("Emulation.setDeviceMetricsOverride", { width: 360, height: 800, mobile: true, deviceScaleFactor: 1 });
+  await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "reduce" }] });
+  r = await run(`const code=document.querySelector('[data-invite-code]');const card=$('referrals');
+    const box=card.getBoundingClientRect();const text=code.getBoundingClientRect();
+    return { fits:text.width > 0 && text.left >= box.left && text.right <= box.right && box.right <= innerWidth,
+      still:getComputedStyle(code).animationName === 'none' };`);
+  check(r.fits && r.still, "referral code fits a 360px screen and respects reduced motion");
+  await send("Emulation.clearDeviceMetricsOverride");
+  await send("Emulation.setEmulatedMedia", { features: [] });
 
   // Google switched off on the server: no button, no card, the rest unchanged.
   await open("/account/");

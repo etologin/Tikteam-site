@@ -21,6 +21,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Unbounded:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/site.css">
+  <link rel="stylesheet" href="assets/css/referrals.css">
+  <script type="module" src="assets/js/referral-home.js"></script>
   <script src="assets/js/menu.js" defer></script>
 <link rel="stylesheet" href="assets/css/language.css">
   <script type="module" src="assets/js/language.js"></script>
@@ -103,6 +105,27 @@
         </div>
       </div>
     </section>
+
+    <div class="wrap">
+      <section class="invitation-card" id="referrals" aria-labelledby="invite-title" data-home-referral>
+        <div>
+          <h2 id="invite-title" data-invite-text="referral.title">Приглашения</h2>
+          <p class="invitation-card__offer" data-invite-text="referral.summary">Пригласи друга и получи скидку $5</p>
+          <p class="invitation-card__details" data-invite-text="referral.friend">Другу — скидка 10% на первый месяц.</p>
+          <p class="invitation-card__details" data-invite-text="referral.terms">Скидка $5 начисляется после проверки первой оплаты друга от $15 без налогов и через 30 дней после оплаты. Кредит действует 400 дней и покрывает до половины следующей покупки.</p>
+        </div>
+        <div class="invitation-card__controls">
+          <code class="invitation-card__code" data-invite-code dir="ltr" hidden></code>
+          <a class="btn" data-invite-enter data-invite-text="referral.signIn" href="https://account.tikteam.live/account/#referrals">Войти и увидеть код</a>
+          <div class="invitation-card__actions" data-invite-actions hidden>
+            <button class="btn btn--small" type="button" data-invite-copy="code" data-invite-text="referral.copyCode">Скопировать код</button>
+            <button class="btn btn--ghost btn--small" type="button" data-invite-copy="link" data-invite-text="referral.copyLink">Скопировать ссылку</button>
+          </div>
+          <button class="btn btn--ghost btn--small" type="button" data-invite-retry data-invite-text="referral.retry" hidden>Повторить</button>
+          <p class="invitation-card__status" data-invite-status role="status"></p>
+        </div>
+      </section>
+    </div>
 
     <section id="how" class="section">
       <div class="wrap">

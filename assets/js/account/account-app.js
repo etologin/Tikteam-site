@@ -9,6 +9,8 @@ import { checkoutUrl, portalUrl, googleStartUrl } from "./urls.js";
 import { dashboardPlan } from "./dashboard.js";
 import { t, errorText, billingState, moduleName, packName, formatDate, pageLang } from "./i18n.js";
 import { byId, el, showOnly, notice, busy, clearPasswords, wireRevealButtons, isEmail, isPasswordLength } from "./dom.js";
+import { createReferralCard } from "./referral-card.js";
+import { clearInvitation, readInvitation, referralCode } from "./referrals.js";
 
 const VIEWS = ["view-loading", "view-disabled", "view-unavailable", "view-auth", "view-dashboard"];
 const CARDS = { billing: "card-billing", modules: "card-modules", devices: "card-devices", google: "card-google", security: "card-security" };
@@ -18,6 +20,8 @@ let data = null;
 let checkoutOpened = false;
 // Answer of GET /auth/google/config: true, false, or null while unknown. Only true shows Google.
 let googleEnabled = null;
+const referralCard = createReferralCard(byId("referrals"));
+let pendingInvitation = readInvitation(new URL(location.href));
 
 await localizationReady;
 start();
@@ -31,7 +35,7 @@ function start() {
   client = createClient({ transport: createTransport(), base: API_BASE });
   wireForms();
   // Leaving the page (or bfcache) must not keep passwords, tokens or account data around.
-  addEventListener("pagehide", () => { clearPasswords(); data = null; client?.forget(); });
+  addEventListener("pagehide", () => { dropDashboard(); client?.forget(); });
   addEventListener("pageshow", (event) => { if (event.persisted) refresh(); });
   refresh();
 }
@@ -64,8 +68,9 @@ function showSignIn() {
 async function loadDashboard() {
   // The profile comes first and alone: it is all an unconfirmed account may read.
   const account = (await client.get("/account")).body ?? {};
-  data = { account, devices: null, billing: null, failed: {} };
+  data = { account, devices: null, billing: null, failed: {}, referralState: "loading", referralCode: "" };
   if (!dashboardPlan(account, googleEnabled).loadFeatures) { renderDashboard(); return; }
+  void loadAccountReferral(data);
   const [devices, billing] = await Promise.allSettled([client.get("/account/devices"), client.get("/billing/status")]);
   const errors = [devices, billing].filter((r) => r.status === "rejected").map((r) => r.reason);
   const expired = errors.find((e) => e?.code === "session_expired");
@@ -93,10 +98,47 @@ function dropDashboard() {
   checkoutOpened = false;
   for (const id of ["modules-list", "packs-list", "devices-list"]) byId(id).replaceChildren();
   byId("profile-email").textContent = "";
+  referralCard.show("guest");
+  byId("invite-entered").value = "";
   clearPasswords(byId("view-dashboard"));
 }
 
 const currentPlan = () => dashboardPlan(data?.account, googleEnabled);
+
+async function loadAccountReferral(owner) {
+  owner.referralState = "loading";
+  referralCard.show("loading");
+  try {
+    const code = referralCode((await client.post("/referral/code", {})).body?.code);
+    if (code.length !== 6) throw new Error("invalid invitation code");
+    if (data !== owner) return;
+    owner.referralCode = code;
+    owner.referralState = "ready";
+  } catch (error) {
+    if (data !== owner) return;
+    if (error.code === "session_expired") { await refresh(t("err.session_expired"), "error"); return; }
+    if (error.code === "csrf_invalid") {
+      try {
+        if (!(await client.bootstrap()).authenticated && data === owner) {
+          showSignIn();
+          return;
+        }
+      } catch { /* The retry button remains available. */ }
+      if (data !== owner) return;
+    }
+    owner.referralState = error.code === "email_unconfirmed" ? "unconfirmed" : "error";
+  }
+  renderReferrals();
+}
+
+function renderReferrals() {
+  const confirmed = currentPlan().loadFeatures;
+  const state = confirmed ? data.referralState : "unconfirmed";
+  referralCard.show(state, state === "ready" ? data.referralCode : "");
+  byId("invite-redeem").hidden = !confirmed;
+  if (confirmed && pendingInvitation && !byId("invite-entered").value)
+    byId("invite-entered").value = pendingInvitation;
+}
 
 /**
  * Runs one user action. Errors are explained and never retried automatically:
@@ -151,6 +193,24 @@ function selectTab(name) {
 }
 
 function wireForms() {
+  byId("referrals").querySelector("[data-invite-retry]").addEventListener("click", () => {
+    if (data?.referralState === "error") void loadAccountReferral(data);
+  });
+  byId("invite-redeem").addEventListener("submit", (event) => {
+    event.preventDefault();
+    const input = byId("invite-entered");
+    const code = referralCode(input.value);
+    if (!code) { notice(t("err.invalid_request"), "error"); return; }
+    const owner = data;
+    act(event.currentTarget, async () => {
+      await client.post("/commerce/referral/attach", { code });
+      if (data !== owner) return;
+      pendingInvitation = "";
+      clearInvitation();
+      input.value = "";
+      notice(t("referral.applied"));
+    });
+  });
   byId("retry").addEventListener("click", () => { showOnly(VIEWS, "view-loading"); refresh(); });
 
   byId("form-login").addEventListener("submit", (event) => {
@@ -335,6 +395,7 @@ async function openPortal() {
 /* ---------- Rendering ---------- */
 
 function renderDashboard() {
+  renderReferrals();
   const plan = currentPlan();
   renderProfile(plan);
   for (const [key, id] of Object.entries(CARDS)) byId(id).hidden = !plan.cards[key];
@@ -365,7 +426,6 @@ function renderProfile(plan) {
   recovery.hidden = !plan.recovery;
   recovery.textContent = t(plan.hasPassword ? "recovery.newPassword" : "recovery.firstPassword");
   // Before confirmation the profile is the whole dashboard.
-  byId("card-profile").classList.toggle("card--wide", !plan.confirmed);
 }
 
 function renderSecurity(plan) {

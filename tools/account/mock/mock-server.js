@@ -284,6 +284,12 @@ export function createMockServer({ now = () => Date.now() } = {}) {
         if (ownSession) rotateCsrf("anon");
         return respond(204);
       }
+      case "/referral/code": {
+        if (!body(raw, [])) return fail(400, "invalid_request", "Неверный запрос.");
+        if (!user) return needUser();
+        if (!user.confirmed) return needConfirmed();
+        return respond(200, { code: user.email === DEMO.email ? "Q2WF9R" : "DB8X2M" });
+      }
       case "/billing/check": {
         if (!body(raw, [])) return fail(400, "invalid_request", "Неверный запрос.");
         if (!user) return needUser();

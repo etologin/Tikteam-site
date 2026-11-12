@@ -1,0 +1,53 @@
+.invitation-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(1.25rem, 4vw, 3.5rem);
+  padding: clamp(1.25rem, 4vw, 2.75rem);
+  border: 1px solid #485172;
+  border-radius: 24px;
+  background: radial-gradient(ellipse at 90% 0%, #29204e 0%, transparent 58%),
+              linear-gradient(125deg, #101621, #131a2b 62%, #201631);
+}
+.invitation-card[hidden], .invitation-card [hidden] { display: none !important; }
+.invitation-card h2 { margin: 0; }
+.invitation-card__offer { margin: .75rem 0 .25rem; font-size: clamp(1.15rem, 2.6vw, 1.6rem); font-weight: 750; }
+.invitation-card__details { max-width: 56ch; margin: .65rem 0 0; color: #b2bed2; }
+.invitation-card__controls { display: grid; justify-items: start; gap: .65rem; min-width: 0; }
+.invitation-card__code {
+  display: block;
+  max-width: 100%;
+  margin: 0;
+  padding: .12em .16em .18em .24em;
+  color: #fac8f6;
+  font: 800 clamp(2.25rem, 6vw, 4.5rem)/1.12 "Manrope", system-ui, sans-serif;
+  letter-spacing: .095em;
+  user-select: all;
+}
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  .invitation-card__code {
+    background: linear-gradient(105deg, #ff739c, #ffd187, #91ffc1, #78e9ff, #bfa7ff, #ff97e3, #ff739c);
+    background-size: 220% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    animation: invitation-rgb 6s ease-in-out infinite alternate;
+  }
+}
+@keyframes invitation-rgb { to { background-position: 100% 50%; } }
+@media (prefers-reduced-motion: reduce) {
+  .invitation-card__code { animation: none; }
+}
+@media (forced-colors: active) {
+  .invitation-card__code { color: CanvasText; background: none; }
+}
+.invitation-card__actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+.invitation-card__status { color: #c2cde0; margin: 0; }
+.invitation-card__status:empty { display: none; }
+.invitation-card__redeem { grid-column: 1 / -1; padding-top: 1rem; border-top: 1px solid #384260; }
+.invitation-card__redeem label { display: block; margin-bottom: .4rem; }
+.invitation-card__redeem .input { width: min(16rem, 100%); }
+@media (max-width: 660px) {
+  .invitation-card { grid-template-columns: minmax(0, 1fr); }
+  .invitation-card__code { font-size: clamp(2.15rem, 11vw, 3.6rem); }
+}

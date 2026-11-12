@@ -16,6 +16,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@500&family=Manrope:wght@400;500;600;700&family=Unbounded:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../../assets/css/site.css">
   <link rel="stylesheet" href="../../assets/css/account.css">
+  <link rel="stylesheet" href="../../assets/css/referrals.css">
   <script type="module" src="../../assets/js/account/account-app.js"></script>
 <link rel="stylesheet" href="../../assets/css/language.css">
   <script type="module" src="../../assets/js/language.js"></script>
@@ -116,7 +117,7 @@
 
       <section id="view-dashboard" hidden>
         <div class="account-grid">
-          <article class="card" id="card-profile">
+          <article class="card card--wide" id="card-profile">
             <h2>Profile</h2>
             <p>Email: <span class="value" id="profile-email"></span></p>
             <p><span class="state" id="profile-confirmed"></span></p>
@@ -129,6 +130,31 @@
             </div>
             <p class="hint">Signing out of the website does not stop the app or your stream.</p>
           </article>
+
+          <section class="invitation-card card--wide" id="referrals" aria-labelledby="invite-title">
+            <div>
+              <h2 id="invite-title" data-invite-text="referral.title">Invitations</h2>
+              <p class="invitation-card__offer" data-invite-text="referral.summary">Invite a friend and get $5 off</p>
+              <p class="invitation-card__details" data-invite-text="referral.friend">Your friend gets 10% off their first month.</p>
+              <p class="invitation-card__details" data-invite-text="referral.terms">You receive $5 in credit 30 days after your friend's first payment of at least $15 before tax, once verified. Credit lasts 400 days and can cover up to half of your next purchase.</p>
+            </div>
+            <div class="invitation-card__controls">
+              <code class="invitation-card__code" data-invite-code dir="ltr" hidden></code>
+              <div class="invitation-card__actions" data-invite-actions hidden>
+                <button class="btn btn--small" type="button" data-invite-copy="code" data-invite-text="referral.copyCode">Copy code</button>
+                <button class="btn btn--ghost btn--small" type="button" data-invite-copy="link" data-invite-text="referral.copyLink">Copy link</button>
+              </div>
+              <button class="btn btn--ghost btn--small" type="button" data-invite-retry data-invite-text="referral.retry" hidden>Retry</button>
+              <p class="invitation-card__status" data-invite-status role="status"></p>
+            </div>
+            <form id="invite-redeem" class="invitation-card__redeem" hidden>
+              <label for="invite-entered" data-invite-text="referral.input">Invitation code</label>
+              <div class="invitation-card__actions">
+                <input class="input" id="invite-entered" name="code" dir="ltr" maxlength="35" autocomplete="off" spellcheck="false" required>
+                <button class="btn btn--small" type="submit" data-invite-text="referral.apply">Apply code</button>
+              </div>
+            </form>
+          </section>
 
           <article class="card" id="card-billing">
             <h2>Avatar Overlay subscription</h2>
