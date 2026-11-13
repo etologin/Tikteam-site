@@ -17,6 +17,21 @@ async function signIn(client, email = DEMO.email, password = DEMO.password) {
 }
 const code = (fragment) => new URLSearchParams(fragment).get("code");
 
+test("recovery codes retain base64url underscores in the random suffix", async (t) => {
+  const nonce = Buffer.from("Abcd_efgh_ijklmn", "base64url");
+  t.mock.method(globalThis.crypto, "getRandomValues", (bytes) => {
+    if (bytes.length === 12) bytes.set(nonce);
+    else bytes.fill(42);
+    return bytes;
+  });
+  const { client, c } = setup();
+  await client.bootstrap();
+  await client.post("/auth/forgot-password", { email: DEMO.email });
+  await client.post("/auth/reset-password", { code: code(c.lastLink("reset")), newPassword: "recovered-pass-2026" });
+  await signIn(client, DEMO.email, "recovered-pass-2026");
+  assert.equal((await client.get("/account")).body.email, DEMO.email);
+});
+
 test("sign-in issues a new CSRF token: the anonymous one stops working", async () => {
   const { client } = setup();
   const before = await client.bootstrap();

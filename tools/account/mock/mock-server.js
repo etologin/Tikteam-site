@@ -105,7 +105,9 @@ export function createMockServer({ now = () => Date.now() } = {}) {
   }
   // Codes are self-describing so a fresh page (the recovery page) can check them too.
   function readCode(code, purpose) {
-    const match = /^mock_([rc])_([A-Za-z0-9_-]+)_([0-9a-z]+)_[A-Za-z0-9_-]+$/.exec(code ?? "");
+    // random(12) is exactly 16 base64url characters. Its underscores are data,
+    // not additional separators between the email, timestamp and random suffix.
+    const match = /^mock_([rc])_([A-Za-z0-9_-]+)_([0-9a-z]+)_[A-Za-z0-9_-]{16}$/.exec(code ?? "");
     if (!match || usedCodes.has(code)) return null;
     if ((match[1] === "r" ? "reset" : "confirm") !== purpose) return null;
     const issued = parseInt(match[3], 36);
