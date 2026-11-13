@@ -43,7 +43,8 @@ test("account links go only to the hosted account area, in the page's language",
     const accountLinks = hrefs(html).filter((h) => /account/i.test(h) && /^https?:/.test(h));
     assert.ok(accountLinks.length >= 3, page);
     const billing='https://account.tikteam.live/billing/';
-    for (const href of accountLinks) assert.ok([ACCOUNT[lang],billing].includes(href), `${page}: ${href}`);
+    for (const href of accountLinks)
+      assert.ok([ACCOUNT[lang], ACCOUNT[lang] + "#referrals", billing].includes(href), `${page}: ${href}`);
     // No embedding and no sign-in forms on the main site; no test or local hosts.
     assert.doesNotMatch(html, /<iframe|<form|<input/i, page + ": no embedded account or forms");
     assert.doesNotMatch(html, /localhost|127\.0\.0\.1|web-test|api-test|api\.tikteam\.live|(?<!account\.)tikteam\.live\/(en\/)?account/i, page + ": no old or test hosts");
