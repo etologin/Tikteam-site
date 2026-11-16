@@ -1,0 +1,52 @@
+name: Independently verify TikTeam 1.2.42 for Windows
+
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/verify-client-1.2.42.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tikteam-defender-client-1.2.42
+  cancel-in-progress: false
+
+jobs:
+  defender:
+    if: github.repository == 'etologin/Tikteam-site' && github.ref == 'refs/heads/main'
+    runs-on: windows-2025
+    timeout-minutes: 20
+    steps:
+      - name: Verify package and installer pins and scan without executing them
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $ProgressPreference = 'SilentlyContinue'
+          $expected = 'AFDEAAB8A9A216EE6A1EE480D7A0EA1D8D84B8B1E4DBC311D86D568AD95CF2F4'
+          $setupHash = 'D8244F7DC5E6789664C3B5941BFFFB6D698BFC2BDD72E4F79E9163AC8A6C70D0'
+          $status = Get-MpComputerStatus
+          if (-not $status.AMServiceEnabled -or -not $status.AntivirusEnabled) { throw 'Defender is unavailable' }
+          Update-MpSignature
+          $status = Get-MpComputerStatus
+          $file = Join-Path $env:RUNNER_TEMP 'TikTeam-client-1.2.42.zip'
+          Invoke-WebRequest -UseBasicParsing -MaximumRedirection 0 -Uri 'https://updates.tikteam.live/packages/afdeaab8a9a216ee6a1ee480d7a0ea1d8d84b8b1e4dbc311d86d568ad95cf2f4.zip' -OutFile $file
+          if ((Get-Item -LiteralPath $file).Length -ne 725690460 -or (Get-FileHash -LiteralPath $file).Hash -ne $expected) { throw 'Client pin mismatch' }
+          $folder = Join-Path $env:RUNNER_TEMP 'TikTeam-client-1.2.42'
+          Expand-Archive -LiteralPath $file -DestinationPath $folder
+          $installer = Join-Path $folder 'TikTeam.Setup.exe'
+          $count = (Get-ChildItem -LiteralPath $folder -File -Recurse).Count
+          if ($count -ne 3370) { throw 'Extracted inventory mismatch' }
+          if ((Get-Item -LiteralPath $installer).Length -ne 162877793 -or (Get-FileHash -LiteralPath $installer).Hash -ne $setupHash) { throw 'Installer pin mismatch' }
+          $scanner = 'C:\ProgramData\Microsoft\Windows Defender\Platform\CurrentVersion\MpCmdRun.exe'
+          if (-not (Test-Path -LiteralPath $scanner)) { $scanner = Join-Path $env:ProgramFiles 'Windows Defender\MpCmdRun.exe' }
+          $output = & $scanner -Scan -ScanType 3 -File $folder -DisableRemediation 2>&1 | Out-String
+          $code = $LASTEXITCODE
+          Write-Output $output
+          if ($code -ne 0 -or $output -notmatch 'found no threats') { throw 'Defender did not return a clean scan' }
+          if ((Get-FileHash -LiteralPath $file).Hash -ne $expected -or (Get-FileHash -LiteralPath $installer).Hash -ne $setupHash) { throw 'A pin changed during the scan' }
+          $result = [ordered]@{Passed=$true;Sha256=$expected;SetupSha256=$setupHash;Bytes=725690460;ExtractedFiles=$count;SignatureVersion=$status.AntivirusSignatureVersion;CandidateExecuted=$false;ProtectionSettingsChanged=$false}
+          $proof = $result | ConvertTo-Json -Compress
+          Write-Output ('TIKTEAM_DEFENDER_RESULT=' + $proof)
+          Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value ('Defender verified the pinned TikTeam package and installer. ' + $proof)
