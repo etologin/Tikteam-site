@@ -24,9 +24,9 @@ body::before {
     linear-gradient(169deg,#101e33,#0a1324 72%,#0d1c2f);
 }
 .ocean-backdrop { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; contain: strict; }
-.ocean-backdrop canvas { display: block; width: 100%; position: absolute; inset-inline: 0; bottom: 0; }
-.ocean-backdrop canvas:first-child { height: min(22%,185px); }
-.ocean-backdrop canvas:last-child { height: 100%; }
+.ocean-backdrop canvas { display: block; width: 100%; height: 100%; }
+/* Older cached scripts insert a seabed canvas before the water. */
+.ocean-backdrop canvas:not(:last-child) { display: none; }
 @media (forced-colors: active), print {
   .ocean-backdrop, body::before { display: none; }
 }
