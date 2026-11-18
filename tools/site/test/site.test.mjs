@@ -116,7 +116,7 @@ test("the menu script stays tiny and local: no storage, cookies or network", () 
 });
 
 test("the iPhone guide uses the public iCloud template and hands off only setup links", () => {
-  const template = "https://www.icloud.com/shortcuts/912426dc412848efbc0b953df2fe5d2f";
+  const template = "https://www.icloud.com/shortcuts/089a4fbe013540ba83929644e2ab9e03";
   for (const page of ["iphone/index.html", "en/iphone/index.html"]) {
     const html = read(page);
     assert.ok(hrefs(html).includes(template), page);
