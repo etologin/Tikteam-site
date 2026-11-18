@@ -3,9 +3,6 @@
 // panel never stays open over the page. Nothing is stored and nothing is sent anywhere.
 (function () {
   "use strict";
-  function syncMotion() { document.documentElement.classList.toggle("page-idle", document.hidden); }
-  syncMotion();
-  document.addEventListener("visibilitychange", syncMotion);
   var menus = document.querySelectorAll("details.menu");
   Array.prototype.forEach.call(menus, function (menu) {
     var toggle = menu.querySelector("summary");

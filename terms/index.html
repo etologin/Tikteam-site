@@ -17,6 +17,8 @@
   <script src="../assets/js/menu.js" defer></script>
 <link rel="stylesheet" href="../assets/css/language.css">
   <script type="module" src="../assets/js/language.js"></script>
+  <link rel="stylesheet" href="../assets/css/studio-pages.css">
+  <script defer src="../assets/js/ocean.js"></script>
 </head>
 <body>
   <header class="top">
@@ -47,7 +49,13 @@
   </header>
 
   <main class="legal">
-    <article class="wrap legal__body">
+    <div class="wrap legal__layout">
+      <nav class="legal__nav" aria-label="Документы">
+        <a href="../terms/" aria-current="page">Условия</a>
+        <a href="../refunds/">Возвраты</a>
+        <a href="../privacy/">Конфиденциальность</a>
+      </nav>
+      <article class="legal__body">
       <h1>Условия использования</h1>
       <p class="meta">Редакция от 3 октября 2026 года</p>
 
@@ -127,7 +135,8 @@
       <h2>13. Контакты</h2>
       <p>Email: <a href="mailto:support@tikteam.live">support@tikteam.live</a><br>
         Discord: <a href="https://discord.gg/GgXkaWpMhS" target="_blank" rel="noopener">discord.gg/GgXkaWpMhS</a></p>
-    </article>
+      </article>
+    </div>
   </main>
 
   <footer class="foot">

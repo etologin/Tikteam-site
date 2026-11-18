@@ -48,7 +48,7 @@ test("account pages: strict CSP, no referrer, no indexing, framing guard, only o
     assert.doesNotMatch(html, /\sstyle=|\son[a-z]+=/i, page + ": no inline styles or handlers");
     const scripts = [...html.matchAll(/<script\b([^>]*)>/g)].map((m) => m[1]);
     assert.ok(scripts.length >= 2, page);
-    for (const attrs of scripts) assert.match(attrs, /src="(\.\.\/)+assets\/js\/(account\/(guard|account-app|recovery-app)|locale-web|language)\.js"/, page + ": " + attrs);
+    for (const attrs of scripts) assert.match(attrs, /src="(\.\.\/)+assets\/js\/(account\/(guard|account-app|recovery-app)|locale-web|language|ocean)\.js"/, page + ": " + attrs);
     // The guard runs before anything else that could load or read the address.
     assert.ok(html.indexOf("guard.js") < html.indexOf("<link"), page + ": guard first");
   }

@@ -28,22 +28,6 @@ body {
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
-/* The desktop client's blue, violet and teal ambient light sits behind the page.
-   Only the transform moves. The gradients are painted on a single layer. */
-body { isolation: isolate; }
-body::before {
-  content: ""; position: fixed; pointer-events: none; z-index: -1;
-  inset: -4vh -4vw auto; height: min(104vh, 960px);
-  background: radial-gradient(ellipse at 18% 24%, #233b79bb, transparent 44%),
-    radial-gradient(ellipse at 78% 18%, #463684a8, transparent 46%),
-    radial-gradient(ellipse at 85% 65%, #14546980, transparent 46%);
-  animation: studio-light 19s ease-in-out infinite alternate;
-}
-@keyframes studio-light {
-  from { transform: translate(-1.4%, -1%); }
-  to { transform: translate(2%, 3%); }
-}
-html.page-idle body::before { animation-play-state: paused; }
 img { max-width: 100%; display: block; }
 a { color: inherit; }
 h1, h2, h3 { margin: 0; line-height: 1.15; }
