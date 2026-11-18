@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="/assets/css/site.css">
   <link rel="stylesheet" href="/assets/css/account.css">
   <link rel="stylesheet" href="/assets/css/iphone-account.css">
-  <script type="module" src="/assets/js/account/tikdonate-iphone.js"></script>
+  <script type="module" src="/assets/js/account/tikdonate-iphone.js?account-pair=1"></script>
   <link rel="stylesheet" href="../../assets/css/studio-pages.css">
   <script defer src="../../assets/js/ocean.js"></script>
 </head>
@@ -28,25 +28,18 @@
       <p id="state" role="status" aria-live="polite">Проверяем аккаунт…</p>
       <p id="sign-in" hidden><a class="btn" href="/account/">Открыть личный кабинет</a></p>
       <div id="setup" hidden>
-        <label for="devices">Компьютер с TikDonate</label>
-        <select id="devices"></select>
-        <div class="iphone-buttons">
-          <button class="btn" type="button" id="make-qr">Создать QR-код</button>
-          <button class="btn btn--ghost" type="button" id="make-key">Создать ключ</button>
-        </div>
+        <button class="btn" type="button" id="make-qr">Подключить iPhone</button>
       </div>
       <div id="qr-result" hidden>
         <img id="qr-image" width="224" height="224" alt="QR-код подключения iPhone">
-        <p>Отсканируйте QR камерой iPhone или откройте ссылку. Она действует пять минут.</p>
-        <a class="btn" id="open-link" rel="noreferrer">Открыть на этом iPhone</a>
-        <button class="btn btn--ghost" type="button" id="copy-link">Скопировать ссылку</button>
+        <p>Отсканируйте камерой iPhone в течение пяти минут.</p>
       </div>
       <div id="key-result" hidden>
         <p>Скопируйте ключ и вставьте его при установке команды. Ключ показывается после создания.</p>
         <label for="key">Ключ для установки</label>
         <input id="key" readonly spellcheck="false" autocomplete="off">
         <button class="btn" type="button" id="copy-key">Скопировать ключ</button>
-        <a class="btn btn--ghost" href="https://www.icloud.com/shortcuts/912426dc412848efbc0b953df2fe5d2f" rel="noreferrer">Открыть «Команды»</a>
+        <a class="btn btn--ghost" href="https://www.icloud.com/shortcuts/912426dc412848efbc0b953df2fe5d2f" rel="noreferrer">Открыть быструю команду</a>
       </div>
       <button class="btn btn--ghost" type="button" id="unlink" hidden>Отвязать iPhone</button>
     </div>

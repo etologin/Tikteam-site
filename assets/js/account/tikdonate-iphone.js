@@ -5,7 +5,7 @@ const route = "/tikdonate/iphone";
 const byId = id => document.getElementById(id);
 const en = document.documentElement.lang === "en";
 const say = (ru, english) => { byId("state").textContent = en ? english : ru; };
-const ids = ["make-qr", "make-key", "unlink"];
+const ids = ["make-qr", "unlink"];
 let client;
 let generation = 0;
 let expiryTimer;
@@ -15,7 +15,6 @@ function clearQr() {
   clearTimeout(expiryTimer);
   byId("qr-result").hidden = true;
   byId("qr-image").removeAttribute("src");
-  byId("open-link").removeAttribute("href");
 }
 function clearSecrets() {
   clearQr();
@@ -36,7 +35,7 @@ function showError(error) {
     byId("unlink").hidden = false;
     say("Сначала отвяжите текущий iPhone.", "Unlink your current iPhone first.");
   } else if (error.status === 403) {
-    say("Подтвердите почту и проверьте доступ к TikDonate и выбранному компьютеру.", "Confirm your email and check access to TikDonate and the selected computer.");
+    say("Подтвердите почту и проверьте доступ к TikDonate.", "Confirm your email and check access to TikDonate.");
   } else {
     say("Не удалось связаться с TikTeam. Попробуйте ещё раз.", "Could not reach TikTeam. Try again.");
   }
@@ -56,23 +55,14 @@ async function load() {
     if ((await client.get("/account")).body?.emailConfirmed !== true) return showSignIn();
     const { body } = await client.get(route);
     if (current !== generation) return;
-    const devices = Array.isArray(body?.devices) ? body.devices.filter(d => /^[0-9a-f]{32}$/.test(d?.id)) : [];
-    byId("devices").replaceChildren(...devices.map(device => {
-      const option = document.createElement("option");
-      option.value = device.id;
-      option.textContent = device.name || (en ? "TikTeam computer" : "Компьютер TikTeam");
-      return option;
-    }));
     if (body?.phoneLinked) {
       byId("unlink").hidden = false;
-      say("iPhone привязан. Ключ бессрочный.", "An iPhone is linked. Its key does not expire.");
+      say("Чтобы подключить другой iPhone, сперва отвяжите старый iPhone.", "To connect another iPhone, unlink your current iPhone first.");
     } else if (!body?.canConfigure) {
       say("Для подключения нужен доступ к TikDonate.", "TikDonate access is required.");
-    } else if (devices.length === 0) {
-      say("Сначала войдите в этот аккаунт в TikTeam на компьютере.", "First sign in to this account in TikTeam on your computer.");
     } else {
       byId("setup").hidden = false;
-      say("Выберите компьютер, на котором работает TikDonate.", "Choose the computer running TikDonate.");
+      say("Подключите iPhone к своему аккаунту TikTeam.", "Connect your iPhone to your TikTeam account.");
     }
   } catch (error) {
     if (current === generation) showError(error);
@@ -90,30 +80,19 @@ async function change(mode) {
       if (current === generation) await load();
       return;
     }
-    const { body } = await client.post(route, { mode, deviceId: byId("devices").value });
+    const { body } = await client.post(route, { mode: "connect" });
     if (current !== generation) return;
     clearSecrets();
-    if (mode === "setup") {
-      const expiry = Date.parse(body?.expiresAt);
-      if (!/^ttsp1\.[0-9a-f]{64}\.[0-9a-f]{64}$/.test(body?.code) ||
-          !/^iVBORw0KGgo[A-Za-z0-9+/=]{16,88000}$/.test(body?.qrPng) ||
-          !Number.isFinite(expiry) || expiry <= Date.now()) throw new Error();
-      byId("qr-image").src = "data:image/png;base64," + body.qrPng;
-      byId("open-link").href = "https://tikteam.live/iphone/#" + body.code;
-      byId("qr-result").hidden = false;
-      expiryTimer = setTimeout(() => {
-        clearQr();
-        say("Срок ссылки истёк. Создайте новый QR-код.", "The link expired. Create a new QR code.");
-      }, Math.min(expiry - Date.now(), 300000));
-      say("Ссылка готова.", "Your link is ready.");
-    } else {
-      if (!/^ttsc1\.[0-9a-f]{64}\.[0-9a-f]{64}$/.test(body?.key)) throw new Error();
-      byId("key").value = "Bearer " + body.key;
-      byId("key-result").hidden = false;
-      byId("setup").hidden = true;
-      byId("unlink").hidden = false;
-      say("Ключ создан.", "Your key is ready.");
-    }
+    const expiry = Date.parse(body?.expiresAt);
+    if (!/^ttsc1\.[0-9a-f]{64}\.[0-9a-f]{64}$/.test(body?.key) ||
+        !/^iVBORw0KGgo[A-Za-z0-9+/=]{16,88000}$/.test(body?.qrPng) ||
+        !Number.isFinite(expiry)) throw new Error();
+    byId("setup").hidden = true;
+    byId("qr-image").src = "data:image/png;base64," + body.qrPng;
+    byId("key").value = "Bearer " + body.key;
+    byId("qr-result").hidden = byId("key-result").hidden = byId("unlink").hidden = false;
+    expiryTimer = setTimeout(clearQr, Math.max(0, Math.min(expiry - Date.now(), 300000)));
+    say("Ключ создан для вашего аккаунта.", "Your account key is ready.");
   } catch (error) {
     if (current === generation) showError(error);
   } finally {
@@ -134,11 +113,9 @@ async function copy(value, field) {
 }
 
 if (MODE === "real") client = createClient({ transport: createTransport(), base: API_BASE });
-byId("make-qr").addEventListener("click", () => change("setup"));
-byId("make-key").addEventListener("click", () => change("key"));
+byId("make-qr").addEventListener("click", () => change("connect"));
 byId("unlink").addEventListener("click", () => change("unlink"));
 byId("copy-key").addEventListener("click", () => copy(byId("key").value, byId("key")));
-byId("copy-link").addEventListener("click", () => copy(byId("open-link").getAttribute("href")));
 addEventListener("pagehide", () => { generation++; clearSecrets(); client?.forget(); });
 addEventListener("pageshow", event => { if (event.persisted) load(); });
 load();

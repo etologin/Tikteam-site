@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="/assets/css/site.css">
   <link rel="stylesheet" href="/assets/css/account.css">
   <link rel="stylesheet" href="/assets/css/iphone-account.css">
-  <script type="module" src="/assets/js/account/tikdonate-iphone.js"></script>
+  <script type="module" src="/assets/js/account/tikdonate-iphone.js?account-pair=1"></script>
   <link rel="stylesheet" href="../../../assets/css/studio-pages.css">
   <script defer src="../../../assets/js/ocean.js"></script>
 </head>
@@ -28,25 +28,18 @@
       <p id="state" role="status" aria-live="polite">Checking your account…</p>
       <p id="sign-in" hidden><a class="btn" href="/en/account/">Open your account</a></p>
       <div id="setup" hidden>
-        <label for="devices">Computer running TikDonate</label>
-        <select id="devices"></select>
-        <div class="iphone-buttons">
-          <button class="btn" type="button" id="make-qr">Create QR code</button>
-          <button class="btn btn--ghost" type="button" id="make-key">Create key</button>
-        </div>
+        <button class="btn" type="button" id="make-qr">Connect iPhone</button>
       </div>
       <div id="qr-result" hidden>
         <img id="qr-image" width="224" height="224" alt="iPhone setup QR code">
-        <p>Scan the QR code with your iPhone camera or open the link. It expires in five minutes.</p>
-        <a class="btn" id="open-link" rel="noreferrer">Open on this iPhone</a>
-        <button class="btn btn--ghost" type="button" id="copy-link">Copy link</button>
+        <p>Scan with your iPhone camera within five minutes.</p>
       </div>
       <div id="key-result" hidden>
         <p>Copy the key and paste it when adding the shortcut. The key is shown when you create it.</p>
         <label for="key">Setup key</label>
         <input id="key" readonly spellcheck="false" autocomplete="off">
         <button class="btn" type="button" id="copy-key">Copy key</button>
-        <a class="btn btn--ghost" href="https://www.icloud.com/shortcuts/912426dc412848efbc0b953df2fe5d2f" rel="noreferrer">Open Shortcuts</a>
+        <a class="btn btn--ghost" href="https://www.icloud.com/shortcuts/912426dc412848efbc0b953df2fe5d2f" rel="noreferrer">Open shortcut</a>
       </div>
       <button class="btn btn--ghost" type="button" id="unlink" hidden>Unlink iPhone</button>
     </div>
