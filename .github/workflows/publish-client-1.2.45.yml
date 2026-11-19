@@ -1,0 +1,82 @@
+name: Publish verified TikTeam 1.2.45 Windows release
+
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/publish-client-1.2.45.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tikteam-client-release-1.2.45
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.repository == 'etologin/Tikteam-site' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      actions: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: etologin/Tikteam-site
+      RELEASE_TAG: client-v1.2.45
+    steps:
+      - name: Require successful independent Defender scan for the pinned client
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api repos/etologin/Tikteam-site/actions/runs/44541953981 > defender-run.json
+          jq -e '.conclusion == "success" and .head_sha == "e1a22212881055cc63722eed6a9d04878b42150f" and .path == ".github/workflows/verify-client-1.2.45.yml"' defender-run.json > /dev/null
+
+      - name: Download and verify exact published installer, signed metadata and client
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --show-error --silent --proto '=https' --tlsv1.2 --connect-timeout 15 --max-time 300 --retry 2 --output TikTeam.Setup.exe https://updates.tikteam.live/TikTeam.Setup.exe
+          curl --fail --show-error --silent --proto '=https' --tlsv1.2 --connect-timeout 15 --max-time 30 --retry 2 --output release.json https://updates.tikteam.live/v1/subscriber/windows-x64/latest
+          curl --fail --show-error --silent --proto '=https' --tlsv1.2 --connect-timeout 15 --max-time 600 --retry 2 --output client-5903a2e2debf64fb74116696b63eb0307eacfb1798898822a44b6545c95ee7aa.zip https://updates.tikteam.live/packages/5903a2e2debf64fb74116696b63eb0307eacfb1798898822a44b6545c95ee7aa.zip
+          test "$(stat -c %s TikTeam.Setup.exe)" = 162887468
+          test "$(stat -c %s client-5903a2e2debf64fb74116696b63eb0307eacfb1798898822a44b6545c95ee7aa.zip)" = 728013636
+          printf '%s  %s\n' 568e6efbf1f70ab64bf8efbd51f73a4d913d7574ce35a1ce5db9e11dec34b018 TikTeam.Setup.exe e3727ba57b2bff92faa569f1572008e126f08b32a5572c9434dcf18079212e6a release.json 5903a2e2debf64fb74116696b63eb0307eacfb1798898822a44b6545c95ee7aa client-5903a2e2debf64fb74116696b63eb0307eacfb1798898822a44b6545c95ee7aa.zip | sha256sum --check --strict
+
+      - name: Publish release assets and verify mirror roundtrip
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > release-notes.md <<'NOTES'
+          TikTeam 1.2.45 for Windows 10/11 (64-bit).
+
+          Добавлен семидневный пробный период по кнопке на главной TikTeam. В Avatar Overlay можно отключить игровые ролики ± побед.
+          При обновлении с 1.2.44 скачиваются 15 изменённых файлов (31.0 МБ).
+          Android 0.3.10: https://updates.tikteam.live/android/TikTeam-Android-0.3.10.apk
+
+          Installer: 162887468 bytes.
+          SHA256: 568e6efbf1f70ab64bf8efbd51f73a4d913d7574ce35a1ce5db9e11dec34b018
+          Client archive SHA256: 5903a2e2debf64fb74116696b63eb0307eacfb1798898822a44b6545c95ee7aa
+          Client source: 64acfba11042d2e3afd60906ef303c8cb1a14165
+          NOTES
+          if ! gh release view "$RELEASE_TAG" --json tagName > /dev/null; then
+            gh release create "$RELEASE_TAG" --target "$GITHUB_SHA" --draft --latest=false --title 'TikTeam 1.2.45 — Windows' --notes-file release-notes.md
+          fi
+          gh release view "$RELEASE_TAG" --json assets,isDraft > release-state.json
+          for asset in TikTeam.Setup.exe release.json client-5903a2e2debf64fb74116696b63eb0307eacfb1798898822a44b6545c95ee7aa.zip; do
+            if ! jq -e --arg name "$asset" 'any(.assets[]; .name == $name)' release-state.json > /dev/null; then
+              gh release upload "$RELEASE_TAG" "$asset"
+            fi
+          done
+          mkdir verified-roundtrip
+          gh release download "$RELEASE_TAG" --dir verified-roundtrip
+          cd verified-roundtrip
+          test "$(stat -c %s TikTeam.Setup.exe)" = 162887468
+          test "$(stat -c %s client-5903a2e2debf64fb74116696b63eb0307eacfb1798898822a44b6545c95ee7aa.zip)" = 728013636
+          printf '%s  %s\n' 568e6efbf1f70ab64bf8efbd51f73a4d913d7574ce35a1ce5db9e11dec34b018 TikTeam.Setup.exe e3727ba57b2bff92faa569f1572008e126f08b32a5572c9434dcf18079212e6a release.json 5903a2e2debf64fb74116696b63eb0307eacfb1798898822a44b6545c95ee7aa client-5903a2e2debf64fb74116696b63eb0307eacfb1798898822a44b6545c95ee7aa.zip | sha256sum --check --strict
+          cd ..
+          if jq -e '.isDraft' release-state.json > /dev/null; then
+            gh release edit "$RELEASE_TAG" --draft=false --prerelease=false --latest=true
+          fi
+          gh release view "$RELEASE_TAG" --json url --jq '.url' >> "$GITHUB_STEP_SUMMARY"
