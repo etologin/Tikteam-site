@@ -1,0 +1,41 @@
+name: Retire superseded Windows client downloads
+on:
+  push:
+    branches: [codex/retire-old-clients-seq33]
+    paths:
+      - '.github/workflows/retire-old-windows-clients.yml'
+permissions:
+  contents: write
+concurrency:
+  group: retire-old-windows-clients
+  cancel-in-progress: false
+jobs:
+  retire:
+    if: github.repository == 'etologin/Tikteam-site'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Move superseded client releases to drafts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: etologin/Tikteam-site
+        shell: bash
+        run: |
+          set -euo pipefail
+          latest="$(gh api "repos/$REPO/releases/latest" --jq .tag_name)"
+          test "$latest" = client-v1.2.45
+          gh api --paginate "repos/$REPO/releases?per_page=100" --jq '.[] | select(.draft==false) | [.tag_name,(.id|tostring)] | @tsv' > releases.tsv
+          while IFS=$'\t' read -r tag id; do
+            case "$tag" in
+              setup-v1.2.13.2) ;;
+              client-v1.2.*)
+                patch="${tag#client-v1.2.}"
+                [[ "$patch" =~ ^[0-9]+$ ]] && (( 10#$patch < 45 )) || continue
+                ;;
+              *) continue ;;
+            esac
+            gh api --method PATCH "repos/$REPO/releases/$id" -F draft=true --jq .draft | grep -Fx true
+            echo "Made $tag private"
+          done < releases.tsv
+          test "$(gh api "repos/$REPO/releases/latest" --jq .tag_name)" = client-v1.2.45
+
