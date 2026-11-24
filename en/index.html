@@ -28,7 +28,7 @@
   <script type="module" src="../assets/js/language.js"></script>
   <link rel="stylesheet" href="../assets/css/studio-pages.css">
   <script defer src="../assets/js/ocean.js"></script>
-  <link rel="stylesheet" href="../assets/css/module-preview.css?v=37">
+  <link rel="stylesheet" href="../assets/css/module-preview.css?v=38">
   <script defer src="../assets/js/module-preview.js?v=35"></script>
 </head>
 <body>
@@ -191,7 +191,7 @@
             <header class="module__head">
               <h3>Dead as Disco</h3>
             </header>
-            <div class="module__player module__player--disco">
+            <div class="module__player module__player--game">
               <video class="module__video" width="1920" height="1080" muted playsinline loop preload="none"
                      aria-label="Dead as Disco" aria-describedby="disco-description" poster="../assets/promo/dead-as-disco-v6-en.webp">
                 <source media="(max-width: 640px)" src="../assets/promo/dead-as-disco-v6-mobile.mp4" type="video/mp4">
@@ -200,11 +200,18 @@
             </div>
             <p class="sr-only" id="disco-description">Viewers enter the arena as enemies, allies or bosses, with their name and avatar overhead. The mod installs from the app, and the game files it changes are backed up first.</p>
           </article>
-          <article class="card module">
+          <article id="module-sor4" class="card module module--preview">
             <header class="module__head">
               <h3>Streets of Rage 4</h3>
             </header>
-            <p class="sr-only">A gift spawns a fighter carrying the viewer's name; health and team depend on the gift. Blue vs red team battles with rounds and overtime.</p>
+            <div class="module__player module__player--game">
+              <video class="module__video" width="1920" height="1080" muted playsinline loop preload="none"
+                     aria-label="Streets of Rage 4" aria-describedby="sor4-description" poster="../assets/promo/sor4-v1-en.webp">
+                <source media="(max-width: 640px)" src="../assets/promo/sor4-v1-mobile.mp4" type="video/mp4">
+                <source src="../assets/promo/sor4-v1-web.mp4" type="video/mp4">
+              </video>
+            </div>
+            <p class="sr-only" id="sor4-description">A gift spawns a fighter carrying the viewer's name; health and team depend on the gift. Blue vs red team battles with rounds and overtime.</p>
           </article>
         </div>
       </div>

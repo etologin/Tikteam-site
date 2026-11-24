@@ -24,6 +24,7 @@ test("module previews retain their artwork, proportions and on-demand descriptio
     const previews = [
       ["avatar-overlay", "avatar-description", "v33", 800, 420], ["battle-overlay", "battle-description", "v32", 800, 420],
       ["tikdonate", "donate-description", "v32", 800, 420], ["dead-as-disco", "disco-description", "v6", 1920, 1080],
+      ["sor4", "sor4-description", "v1", 1920, 1080],
     ];
     for (const [id, description, version, width, height] of previews) {
       const card = read(page).split('<article id="module-' + id + '"')[1].split("</article>")[0];
@@ -32,7 +33,7 @@ test("module previews retain their artwork, proportions and on-demand descriptio
       assert.ok(card.includes('aria-describedby="' + description + '"'));
       assert.ok(card.includes('<p class="sr-only" id="' + description + '">'));
       const cover = card.match(/poster="([^"]+)"/)[1];
-      assert.equal(resolve(SITE, dirname(page), cover), join(SITE, "assets/promo", id + "-" + version + (id === "dead-as-disco" && page.startsWith("en/") ? "-en" : "") + ".webp"));
+      assert.equal(resolve(SITE, dirname(page), cover), join(SITE, "assets/promo", id + "-" + version + (["dead-as-disco", "sor4"].includes(id) && page.startsWith("en/") ? "-en" : "") + ".webp"));
       const sources = [...card.matchAll(/<source [^>]*src="([^"]+)"/g)].map(m => resolve(SITE, dirname(page), m[1]));
       assert.deepEqual(sources, ["mobile", "web"].map(variant => join(SITE, "assets/promo", id + "-" + version + "-" + variant + ".mp4")));
       assert.match(card, /<source media="\(max-width: 640px\)"/);
