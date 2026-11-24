@@ -143,6 +143,20 @@ test("the menu script stays tiny and local: no storage, cookies or network", () 
   for (const [page] of PAGES) assert.match(read(page), /<script src="(\.\.\/)*assets\/js\/menu\.js" defer><\/script>/, page);
 });
 
+test("the smartphone link offers the Android installer and the iPhone setup guide", () => {
+  for (const prefix of ["", "en/"]) {
+    const home = read(prefix + "index.html");
+    const mobile = read(prefix + "mobile/index.html");
+    assert.match(home, /class="hero__cta">\s*<a class="btn trial-cta" href="#trial">/);
+    assert.deepEqual(hrefs(home).filter(href => href === "mobile/"), Array(4).fill("mobile/"));
+    assert.ok(!hrefs(home).some(href => href.endsWith(".apk") || href === "iphone/"));
+    assert.match(mobile, /https:\/\/updates\.tikteam\.live\/android\/TikTeam-Android-[\d.]+\.apk/);
+    assert.ok(hrefs(mobile).includes("/" + prefix + "iphone/"));
+    assert.equal((mobile.match(/<h2>Android<\/h2>|<h2>iPhone<\/h2>/g) ?? []).length, 2);
+    assert.ok(mobile.includes("/assets/js/language.js"));
+  }
+});
+
 test("the iPhone guide uses the public iCloud template and hands off only setup links", () => {
   const template = "https://www.icloud.com/shortcuts/089a4fbe013540ba83929644e2ab9e03";
   for (const page of ["iphone/index.html", "en/iphone/index.html"]) {

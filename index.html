@@ -43,7 +43,7 @@
         <a href="#modules">Модули</a>
         <a href="#pricing">Цены</a>
         <a href="#faq">Вопросы</a>
-        <a href="iphone/">TikDonate на iPhone</a>
+        <a href="mobile/">TikDonate</a>
       </nav>
       <a class="lang" href="en/" hreflang="en" lang="en" aria-label="English version">EN</a>
       <a class="btn btn--small btn--ghost top__discord" href="https://discord.gg/GgXkaWpMhS" target="_blank" rel="noopener">Discord</a>
@@ -56,7 +56,7 @@
             <a href="#modules">Модули</a>
             <a href="#pricing">Цены</a>
             <a href="#faq">Вопросы</a>
-            <a href="iphone/">TikDonate на iPhone</a>
+            <a href="mobile/">TikDonate</a>
             <a class="btn btn--small menu__account" href="https://account.tikteam.live/account/">Личный кабинет</a>
             <a class="btn btn--small btn--ghost" href="https://discord.gg/GgXkaWpMhS" target="_blank" rel="noopener">Discord</a>
           </nav>
@@ -73,15 +73,15 @@
           <p class="lead">TikTeam превращает подарки, лайки и подписки в TikTok LIVE в действия в игре
             и видеоэффекты на стриме. Одна программа для Windows — несколько игр и оверлеев.</p>
           <div class="hero__cta">
+            <a class="btn trial-cta" href="#trial">Попробовать бесплатно на 7 дней</a>
             <a class="btn" href="https://github.com/etologin/Tikteam-site/releases/download/client-v1.2.45/TikTeam.Setup.exe">Скачать для Windows</a>
             <a class="btn" href="https://account.tikteam.live/account/">Создать аккаунт</a>
           </div>
           <p class="hero__note">TikTeam 1.2.45 · Windows 10/11 x64 · 155 MB</p>
           <div class="hero__links">
-            <a href="#trial">7 дней бесплатно</a>
             <a href="#requirements">Что понадобится</a>
             <details class="downloads"><summary>Другие загрузки</summary>
-              <div><a class="download-link" href="https://updates.tikteam.live/android/TikTeam-Android-0.3.10.apk">TikDonate для Android · APK 0.3.10</a><a href="https://updates.tikteam.live/TikTeam.Setup.exe">Альтернативная загрузка</a><a href="https://github.com/etologin/Tikteam-site/releases/download/client-v1.2.26/TikTeam-Silero-Kazakh-win-x64.zip">Скачать казахские голоса для TTS</a></div>
+              <div><a href="https://updates.tikteam.live/TikTeam.Setup.exe">Альтернативная загрузка</a><a href="https://github.com/etologin/Tikteam-site/releases/download/client-v1.2.26/TikTeam-Silero-Kazakh-win-x64.zip">Скачать казахские голоса для TTS</a></div>
             </details>
           </div>
         </div>
@@ -139,12 +139,11 @@
     <section id="modules" class="section">
       <div class="wrap">
         <h2>Модули</h2>
-        <p class="section__lead">Модули подключаются отдельными подписками — вы платите только за то, чем пользуетесь. Игровые модули входят в одну подписку.</p>
         <div class="modules">
           <article class="card module">
             <header class="module__head">
               <h3>Avatar Overlay</h3>
-              <span class="status status--available">Доступен по подписке</span>
+
             </header>
             <p>Подарок запускает ролик с аватаркой и ником зрителя. В LIVE Studio добавьте захват окна TikTeam overlays.</p>
           </article>
@@ -165,17 +164,17 @@
           <article class="card module">
             <header class="module__head">
               <h3>Battle Overlay</h3>
-              <span class="status status--available">Личные паки</span>
+
             </header>
-            <p>Прозрачные эффекты поверх эфира. Соберите личный пак из своих видео.</p>
+            <p>Эффекты баттла запускаются по событиям TikTok или назначенной клавише.</p>
           </article>
           <article class="card module">
             <header class="module__head">
               <h3>TikDonate</h3>
-              <span class="status status--available">Доступен по подписке</span>
+
             </header>
-            <p>Донаты через переводы Kaspi и DonationAlerts: оповещения в эфире, топ донатеров и цель сбора.</p>
-            <p><a href="iphone/">TikDonate на iPhone</a></p>
+            <p>Донаты через переводы Kaspi / Halyk / Freedom и DonationAlerts: оповещения в эфире, топ донатеров и цель сбора.</p>
+            <p><a href="mobile/">Android / iPhone</a></p>
           </article>
         </div>
       </div>
@@ -202,7 +201,7 @@
     <section id="pricing" class="section">
       <div class="wrap">
         <h2>Цены</h2>
-        <p class="section__lead">Ежемесячная подписка, отменить можно в любой момент. Программа TikTeam входит в любую подписку — модули можно брать по отдельности.</p>
+        <p class="section__lead">Игры входят в подписку TikTeam. Avatar Overlay, Battle Overlay и TikDonate можно подключать отдельно.</p>
         <div class="pricing">
           <article class="card plan">
             <h3>TikTeam</h3>
@@ -233,7 +232,7 @@
             <h3>TikDonate</h3>
             <p class="plan__price">$20<span>/мес</span></p>
             <ul>
-              <li>Донаты через переводы Kaspi</li>
+              <li>Донаты через переводы Kaspi / Halyk / Freedom</li>
               <li>Подключение DonationAlerts</li>
               <li>Оповещения, топ донатеров и цель сбора</li>
             </ul>
@@ -274,11 +273,13 @@
         <h2>Вопросы</h2>
         <details>
           <summary>Сколько это стоит?</summary>
-          <p>От $20 в месяц. Игры, Avatar Overlay, Battle Overlay и TikDonate — отдельные подписки, все цены — в разделе <a href="#pricing">«Цены»</a>.</p>
+          <p>TikTeam · TikDonate — $20<span>/мес</span><br>Avatar Overlay · Battle Overlay — $30<span>/мес</span></p>
+          <p><a href="#pricing">Цены</a></p>
         </details>
         <details>
           <summary>Работает на Mac или телефоне?</summary>
-          <p>TikTeam работает на Windows 10 и 11. Для донатов Kaspi можно <a href="iphone/">подключить iPhone к TikDonate</a>.</p>
+          <p>TikTeam работает на Windows 10/11. Android и iPhone передают в TikDonate уведомления о переводах Kaspi, Halyk и Freedom.</p>
+          <p><a href="mobile/">TikDonate · Android / iPhone</a></p>
         </details>
         <details>
           <summary>Нужно ли покупать игру?</summary>
@@ -286,6 +287,7 @@
         </details>
         <details>
           <summary>Когда можно попробовать?</summary>
+          <p>Подтвердите почту и войдите в TikTeam для Windows. На вкладке «Главная» нажмите «Попробовать бесплатно на 7 дней».</p>
           <p><a href="#trial">7 дней бесплатно</a></p>
         </details>
       </div>

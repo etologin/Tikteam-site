@@ -35,6 +35,21 @@ body::before {
   background: var(--studio-blue); color: white; border-radius: 10px;
 }
 .hero__cta .btn + .btn, .btn--ghost { background: #101c2c; color: var(--text); }
+.hero__cta .btn.trial-cta, .hero__cta .btn.trial-cta:hover {
+  color: #10172b;
+  background: linear-gradient(105deg, #69e8ff, #a7aeff 58%, #ff99cc);
+  border: 1px solid #dbe7ff;
+  box-shadow: 0 4px 18px #7478f742;
+  font-weight: 800;
+}
+.hero__cta .btn.trial-cta:hover { box-shadow: 0 4px 22px #7478f77a; }
+.mobile-donate { max-width: 960px; }
+.mobile-donate h1 { font-size: clamp(30px, 5vw, 54px); }
+.mobile-donate .lead { max-width: 66ch; margin: 12px 0 28px; }
+.mobile-donate .card { display: flex; flex-direction: column; align-items: flex-start; }
+.mobile-donate h2 { margin: 0; }
+.mobile-donate .card p { flex-grow: 1; margin: 12px 0 20px; }
+.mobile-donate .btn { white-space: normal; }
 .btn:not(.btn--ghost,.btn--danger):hover, .button:hover, button.primary:hover:not(:disabled) { background: #3068da; color: white; }
 .card, .panel, .clip, .stats article, .legal__body, main:has(>#checkout-status) {
   background: var(--studio-panel); border: 1px solid var(--line); border-radius: 15px; box-shadow: var(--studio-shadow);
