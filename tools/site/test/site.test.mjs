@@ -90,6 +90,34 @@ test("home pages and the 32 language dictionaries consistently use Battle Overla
   }
 });
 
+test("the free trial can be found from either home page and read in every site language", () => {
+  const russian = read("index.html");
+  const english = read("en/index.html");
+  const aliases = JSON.parse(read("assets/js/language-aliases.js").split(" = ")[1].trim().replace(/;$/, ""));
+  function copy(html) {
+    const section = html.match(/<section id="trial"[\s\S]*?<\/section>/)[0];
+    assert.equal(hrefs(html).filter(href => href === "#trial").length, 2);
+    assert.equal((section.match(/<dt>/g) ?? []).length, 4);
+    assert.ok(section.includes("Corgi · Whale Diving · Leon the Kitten"));
+    return [...section.matchAll(/<(h2|p|dd)\b[^>]*>([^<]+)<\/\1>/g)].map(m => m[2]);
+  }
+  const ru = copy(russian), en = copy(english);
+  assert.ok(ru.some(text => text.includes("Попробовать бесплатно на 7 дней")));
+  assert.equal(ru.length, en.length);
+  for (const { code } of JSON.parse(read("assets/i18n/languages.json"))) {
+    if (code === "ru") continue;
+    const ctx = {};
+    runInNewContext(read("assets/i18n/" + code + ".js"), ctx);
+    const dictionary = ctx.TikTeamSiteDictionaries[code];
+    ru.forEach((source, i) => {
+      if (source === en[i]) return;
+      assert.equal(aliases[en[i]], source);
+      assert.ok(dictionary[source]?.trim(), code + ": " + source);
+      if (code === "en") assert.equal(dictionary[source], en[i]);
+    });
+  }
+});
+
 /** File a relative link of a page points to; directory links mean their index.html. */
 function target(page, path) {
   if (!path) return join(SITE, page);

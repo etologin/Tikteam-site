@@ -135,6 +135,13 @@ p { margin: 0; }
 .section__lead { color: var(--muted); margin: -12px 0 32px; font-size: 18px; }
 .card { background: linear-gradient(132deg, #18243aec, #101827f5); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; }
 .card p { color: var(--muted); }
+.trial-card { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: clamp(24px, 4vw, 56px); align-items: start; }
+.trial-card h2 { margin: 0 0 16px; }
+.trial-card p { margin: 0 0 12px; }
+.trial-card p:last-child { margin-bottom: 0; }
+.trial-card dl { display: grid; gap: 12px; margin: 0; }
+.trial-card dt { font-weight: 700; }
+.trial-card dd { margin: 2px 0 0; color: var(--muted); }
 
 .steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
 .steps h3 { margin: 18px 0 10px; }
