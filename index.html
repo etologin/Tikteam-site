@@ -28,8 +28,8 @@
   <script type="module" src="assets/js/language.js"></script>
   <link rel="stylesheet" href="assets/css/studio-pages.css">
   <script defer src="assets/js/ocean.js"></script>
-  <link rel="stylesheet" href="assets/css/module-preview.css?v=2">
-  <script defer src="assets/js/module-preview.js?v=2"></script>
+  <link rel="stylesheet" href="assets/css/module-preview.css?v=32">
+  <script defer src="assets/js/module-preview.js?v=32"></script>
 </head>
 <body>
   <a class="skip" href="#main">К содержанию</a>
@@ -163,25 +163,34 @@
             </header>
             <p>Подарок выпускает бойца с ником зрителя; здоровье и сторона зависят от подарка. Командный бой синих против красных с раундами и продлением.</p>
           </article>
-          <article class="card module">
-            <header class="module__head">
-              <h3>TikDonate</h3>
-
-            </header>
-            <p>Донаты через переводы Kaspi / Halyk / Freedom и DonationAlerts: оповещения в эфире, топ донатеров и цель сбора.</p>
-            <p><a href="mobile/">Android / iPhone</a></p>
-          </article>
-          <article id="module-battle-overlay" class="card module">
+          <article id="module-battle-overlay" class="card module module--preview">
             <header class="module__head">
               <h3>Battle Overlay</h3>
 
             </header>
-            <video class="module__video" width="900" height="380" controls muted playsinline loop preload="none"
-                   aria-label="Battle Overlay" aria-describedby="battle-description" poster="assets/promo/battle-overlay-v28.jpg">
-              <source media="(max-width: 640px)" src="assets/promo/battle-overlay-v28-mobile.mp4" type="video/mp4">
-              <source src="assets/promo/battle-overlay-v28-web.mp4" type="video/mp4">
-            </video>
+            <div class="module__player">
+              <video class="module__video" width="800" height="420" controls muted playsinline loop preload="none"
+                     aria-label="Battle Overlay" aria-describedby="battle-description" poster="assets/promo/battle-overlay-v32.webp">
+                <source media="(max-width: 640px)" src="assets/promo/battle-overlay-v32-mobile.mp4" type="video/mp4">
+                <source src="assets/promo/battle-overlay-v32-web.mp4" type="video/mp4">
+              </video>
+            </div>
             <p id="battle-description">Эффекты баттла запускаются по событиям TikTok или назначенной клавише.</p>
+          </article>
+          <article id="module-tikdonate" class="card module module--preview">
+            <header class="module__head">
+              <h3>TikDonate</h3>
+
+            </header>
+            <div class="module__player">
+              <video class="module__video" width="800" height="420" controls muted playsinline loop preload="none"
+                     aria-label="TikDonate" aria-describedby="donate-description" poster="assets/promo/tikdonate-v32.webp">
+                <source media="(max-width: 640px)" src="assets/promo/tikdonate-v32-mobile.mp4" type="video/mp4">
+                <source src="assets/promo/tikdonate-v32-web.mp4" type="video/mp4">
+              </video>
+            </div>
+            <p id="donate-description">Донаты через переводы Kaspi / Halyk / Freedom и DonationAlerts: оповещения в эфире, топ донатеров и цель сбора.</p>
+            <p><a href="mobile/">Android / iPhone</a></p>
           </article>
         </div>
       </div>

@@ -19,17 +19,20 @@ const PAGES = [
 const read = (page) => readFileSync(join(SITE, page), "utf8").replace(/\r\n/g, "\n");
 const hrefs = (html) => [...html.matchAll(/\s(?:href|src)="([^"]+)"/g)].map((m) => m[1]);
 
-test("Battle Overlay plays the wide film in its module with the module description", () => {
+test("both module cards use their own wide covers, responsive films and localized descriptions", () => {
   for (const page of ["index.html", "en/index.html"]) {
-    const card = read(page).match(/<article id="module-battle-overlay"[\s\S]*?<\/article>/)[0];
-    assert.match(card, /<video[^>]*width="900" height="380"[^>]*preload="none"/);
-    assert.match(card, /aria-describedby="battle-description"/);
-    assert.match(card, /<p id="battle-description">[^<]+<\/p>/);
-    assert.match(card, /controls muted playsinline/);
-    const sources = [...card.matchAll(/<source [^>]*src="([^"]+)"/g)].map(m => resolve(SITE, dirname(page), m[1]));
-    assert.deepEqual(sources, ["mobile", "web"].map(variant => join(SITE, "assets/promo", "battle-overlay-v28-" + variant + ".mp4")));
-    assert.match(card, /<source media="\(max-width: 640px\)"/);
-    assert.ok(sources.every(path => existsSync(path)));
+    for (const [id, description] of [["battle-overlay", "battle-description"], ["tikdonate", "donate-description"]]) {
+      const card = read(page).split('<article id="module-' + id + '"')[1].split("</article>")[0];
+      assert.match(card, /<video[^>]*width="800" height="420" controls muted playsinline loop preload="none"/);
+      assert.ok(card.includes('aria-describedby="' + description + '"'));
+      assert.ok(card.includes('<p id="' + description + '">'));
+      const cover = card.match(/poster="([^"]+)"/)[1];
+      assert.equal(resolve(SITE, dirname(page), cover), join(SITE, "assets/promo", id + "-v32.webp"));
+      const sources = [...card.matchAll(/<source [^>]*src="([^"]+)"/g)].map(m => resolve(SITE, dirname(page), m[1]));
+      assert.deepEqual(sources, ["mobile", "web"].map(variant => join(SITE, "assets/promo", id + "-v32-" + variant + ".mp4")));
+      assert.match(card, /<source media="\(max-width: 640px\)"/);
+      assert.ok(sources.every(path => existsSync(path)));
+    }
   }
 });
 

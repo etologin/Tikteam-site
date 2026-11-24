@@ -41,6 +41,23 @@
   function enableVideoPreview(card, video) {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     let hoverPlayback = false;
+    const touchPlay = document.createElement('button');
+    touchPlay.type = 'button';
+    touchPlay.className = 'module__touch-play';
+    touchPlay.setAttribute('aria-label', '▶ ' + video.getAttribute('aria-label'));
+    const icon = document.createElement('span');
+    icon.textContent = '▶';
+    icon.setAttribute('aria-hidden', 'true');
+    touchPlay.append(icon);
+    video.after(touchPlay);
+    touchPlay.addEventListener('click', () => video.play().catch(() => {}));
+    video.addEventListener('pause', () => { touchPlay.hidden = false; });
+    video.addEventListener('play', () => {
+      touchPlay.hidden = true;
+      for (const other of document.querySelectorAll('.module__video')) {
+        if (other !== video && !other.paused) other.pause();
+      }
+    });
     card.addEventListener('pointerenter', event => {
       if (event.pointerType !== 'mouse' || !video.paused || document.hidden || reduceMotion.matches) return;
       hoverPlayback = true;
@@ -51,12 +68,6 @@
       hoverPlayback = false;
     });
     if ('IntersectionObserver' in window) {
-      const warm = new IntersectionObserver(entries => {
-        if (!entries.some(entry => entry.isIntersecting)) return;
-        if (!navigator.connection?.saveData) video.preload = 'auto';
-        warm.disconnect();
-      }, {rootMargin: '200px 0px'});
-      warm.observe(video);
       const visibility = new IntersectionObserver(entries => {
         if (!entries[0].isIntersecting && !document.fullscreenElement) video.pause();
       });
