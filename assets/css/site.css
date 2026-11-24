@@ -129,7 +129,7 @@ p { margin: 0; }
   background: linear-gradient(125deg, #5069b2a1, #1b2b46cc 50%, #44879bbc);
   border: 1px solid #708cc296; box-shadow: 0 22px 58px -18px #020612c4;
 }
-.app-preview img { width: 100%; height: auto; border-radius: 9px; }
+.app-preview .home-promo { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: contain; border-radius: 9px; background: #0b1321; }
 /* Sections */
 .section { padding: clamp(36px, 5vw, 64px) 0; }
 .section__lead { color: var(--muted); margin: -12px 0 32px; font-size: 18px; }
