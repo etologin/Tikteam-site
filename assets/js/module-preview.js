@@ -169,7 +169,11 @@
   document.addEventListener('visibilitychange', () => { if (document.hidden) dismissPreview(); });
   window.addEventListener('resize', placePreview);
   window.addEventListener('scroll', () => {
-    if (document.fullscreenElement !== preview) dismissPreview();
+    if (!watching || document.fullscreenElement === preview) return;
+    // Mobile browsers may scroll the focused card just after a tap.
+    const anchor = watching.toggle.getBoundingClientRect();
+    if (manual && anchor.bottom > 0 && anchor.top < window.innerHeight) placePreview();
+    else dismissPreview();
   }, {passive: true});
   function attach(entry) {
     const {button} = entry;
