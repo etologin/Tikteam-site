@@ -1,5 +1,4 @@
 .module--preview {
-  grid-column: 1 / -1;
   min-width: 0;
   overflow: hidden;
   padding: 0;
@@ -23,12 +22,6 @@
     display: grid; place-items: center; width: 44px; height: 44px;
     border-radius: 50%; background: #121c2ce8; border: 1px solid #c5d1e3;
   }
-}
-@media (min-width: 740px) {
-  #modules .modules { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-@media (min-width: 1150px) {
-  #modules .modules { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 .module__info {
   display: grid; place-items: center; flex: none; margin-inline-start: auto;
