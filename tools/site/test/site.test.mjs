@@ -23,7 +23,8 @@ test("both module cards use their own wide covers, responsive films and localize
   for (const page of ["index.html", "en/index.html"]) {
     for (const [id, description] of [["battle-overlay", "battle-description"], ["tikdonate", "donate-description"]]) {
       const card = read(page).split('<article id="module-' + id + '"')[1].split("</article>")[0];
-      assert.match(card, /<video[^>]*width="800" height="420" controls muted playsinline loop preload="none"/);
+      assert.match(card, /<video[^>]*width="800" height="420" muted playsinline loop preload="none"/);
+      assert.doesNotMatch(card, /<video\b[^>]*\bcontrols\b/);
       assert.ok(card.includes('aria-describedby="' + description + '"'));
       assert.ok(card.includes('<p id="' + description + '">'));
       const cover = card.match(/poster="([^"]+)"/)[1];

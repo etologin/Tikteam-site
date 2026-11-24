@@ -9,20 +9,15 @@
 .module--preview > p { padding: 12px 18px; }
 .module--preview > p + p { padding-top: 0; }
 .module__video { display: block; width: 100%; height: auto; aspect-ratio: 40 / 21; object-fit: cover; background: #10131d; }
-.module__video:fullscreen { height: 100%; object-fit: contain; }
+.module__player:fullscreen .module__video { height: 100%; object-fit: contain; }
 .module__player { position: relative; }
-.module__touch-play { display: none; }
-@media (hover: none), (pointer: coarse) {
-  .module__touch-play:not([hidden]) {
-    display: grid; align-items: end; justify-content: end;
-    position: absolute; inset: 0 0 min(52px, 25%) 0; width: 100%;
-    border: 0; padding: 10px 14px; background: transparent; color: white; cursor: pointer;
-  }
-  .module__touch-play span {
-    display: grid; place-items: center; width: 44px; height: 44px;
-    border-radius: 50%; background: #121c2ce8; border: 1px solid #c5d1e3;
-  }
+.module__preview-toggle {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  border: 0; padding: 0; background: transparent; cursor: pointer;
 }
+.module__preview-toggle img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.module__preview-toggle[aria-pressed="true"] img { visibility: hidden; }
+.module__preview-toggle:focus-visible { outline: 2px solid #9fceff; outline-offset: -3px; }
 .module__info {
   display: grid; place-items: center; flex: none; margin-inline-start: auto;
   width: 32px; height: 32px; padding: 0; cursor: pointer;

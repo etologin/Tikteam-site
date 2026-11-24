@@ -38,42 +38,61 @@
     position();
   }
   function hide() { active = null; pinned = false; tip.hidden = true; }
-  function enableVideoPreview(card, video) {
+  function enableVideoPreview(video) {
+    const player = video.parentElement;
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    let hoverPlayback = false;
-    const touchPlay = document.createElement('button');
-    touchPlay.type = 'button';
-    touchPlay.className = 'module__touch-play';
-    touchPlay.setAttribute('aria-label', '▶ ' + video.getAttribute('aria-label'));
-    const icon = document.createElement('span');
-    icon.textContent = '▶';
-    icon.setAttribute('aria-hidden', 'true');
-    touchPlay.append(icon);
-    video.after(touchPlay);
-    touchPlay.addEventListener('click', () => video.play().catch(() => {}));
-    video.addEventListener('pause', () => { touchPlay.hidden = false; });
+    const toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'module__preview-toggle';
+    toggle.setAttribute('aria-label', '▶ ' + video.getAttribute('aria-label'));
+    toggle.setAttribute('aria-pressed', 'false');
+    const cover = new Image();
+    cover.alt = '';
+    cover.src = video.poster;
+    toggle.append(cover);
+    video.after(toggle);
+
+    function stop() {
+      toggle.setAttribute('aria-pressed', 'false');
+      video.pause();
+      if (video.readyState >= 1 && video.currentTime > 0) video.currentTime = 0;
+    }
+    function play() {
+      video.play().catch(() => {
+        if (video.paused) toggle.setAttribute('aria-pressed', 'false');
+      });
+    }
+    toggle.addEventListener('click', () => { if (video.paused) play(); else stop(); });
+    toggle.addEventListener('dblclick', () => {
+      if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+      if (document.fullscreenElement === player) document.exitFullscreen();
+      else if (player.requestFullscreen) player.requestFullscreen().then(play).catch(() => {});
+    });
+    toggle.addEventListener('blur', stop);
+    video.addEventListener('pause', () => { if (video.paused) stop(); });
+    video.addEventListener('error', stop);
     video.addEventListener('play', () => {
-      touchPlay.hidden = true;
+      if (video.paused) return;
       for (const other of document.querySelectorAll('.module__video')) {
         if (other !== video && !other.paused) other.pause();
       }
     });
-    card.addEventListener('pointerenter', event => {
-      if (event.pointerType !== 'mouse' || !video.paused || document.hidden || reduceMotion.matches) return;
-      hoverPlayback = true;
-      video.play().catch(() => { /* The native play button stays available. */ });
+    video.addEventListener('playing', () => {
+      if (!video.paused) toggle.setAttribute('aria-pressed', 'true');
     });
-    card.addEventListener('pointerleave', () => {
-      if (hoverPlayback && !document.fullscreenElement) video.pause();
-      hoverPlayback = false;
+    player.addEventListener('pointerenter', event => {
+      if (event.pointerType === 'mouse' && !document.hidden && !reduceMotion.matches) play();
+    });
+    player.addEventListener('pointerleave', event => {
+      if (event.pointerType === 'mouse') stop();
     });
     if ('IntersectionObserver' in window) {
       const visibility = new IntersectionObserver(entries => {
-        if (!entries[0].isIntersecting && !document.fullscreenElement) video.pause();
+        if (!entries[0].isIntersecting) stop();
       });
-      visibility.observe(card);
+      visibility.observe(player);
     }
-    document.addEventListener('visibilitychange', () => { if (document.hidden) video.pause(); });
+    document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); });
   }
   function attach(entry) {
     const {anchor,button} = entry;
@@ -99,7 +118,7 @@
     const entry = {anchor:card,button,name,description};
     attach(entry);
     const video = card.querySelector('.module__video');
-    if (video) enableVideoPreview(card, video);
+    if (video) enableVideoPreview(video);
     button.addEventListener('click', () => {
       if (pinned && active === entry) hide();
       else { show(entry); pinned = true; }
