@@ -5,13 +5,11 @@
   gap: 0;
   scroll-margin-top: 80px;
 }
-.module--preview .module__head { align-items: center; padding: 12px 18px; }
+.module--preview .module__head { align-items: center; justify-content: flex-start; gap: 8px; min-height: 56px; padding: 12px 18px; }
 .modules .module { align-self: start; }
 .module__mobile {
-  align-self: flex-start; margin: 12px 18px; border: 1px solid #3cccb1;
-  background: #163d38; color: #acffea;
+  flex: none; min-height: 32px; padding: 0 10px; font-size: 13px; white-space: nowrap;
 }
-.module__mobile:hover, .module__mobile:focus-visible { background: #21574c; color: white; }
 .module__video { display: block; width: 100%; height: auto; object-fit: contain; background: #10131d; }
 .module__player:fullscreen .module__video { height: 100%; object-fit: contain; }
 .module__player { position: relative; }
