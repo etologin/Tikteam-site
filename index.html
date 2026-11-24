@@ -28,8 +28,8 @@
   <script type="module" src="assets/js/language.js"></script>
   <link rel="stylesheet" href="assets/css/studio-pages.css">
   <script defer src="assets/js/ocean.js"></script>
-  <link rel="stylesheet" href="assets/css/module-preview.css">
-  <script defer src="assets/js/module-preview.js"></script>
+  <link rel="stylesheet" href="assets/css/module-preview.css?v=2">
+  <script defer src="assets/js/module-preview.js?v=2"></script>
 </head>
 <body>
   <a class="skip" href="#main">К содержанию</a>
@@ -163,15 +163,6 @@
             </header>
             <p>Подарок выпускает бойца с ником зрителя; здоровье и сторона зависят от подарка. Командный бой синих против красных с раундами и продлением.</p>
           </article>
-          <article id="module-battle-overlay" class="card module">
-            <header class="module__head">
-              <h3>Battle Overlay</h3>
-
-            </header>
-            <video class="module__video" width="900" height="380" controls playsinline loop preload="none"
-                   aria-label="Battle Overlay" aria-describedby="battle-description" poster="assets/promo/battle-overlay-v28.jpg" src="assets/promo/battle-overlay-v28.mp4"></video>
-            <p id="battle-description">Эффекты баттла запускаются по событиям TikTok или назначенной клавише.</p>
-          </article>
           <article class="card module">
             <header class="module__head">
               <h3>TikDonate</h3>
@@ -179,6 +170,18 @@
             </header>
             <p>Донаты через переводы Kaspi / Halyk / Freedom и DonationAlerts: оповещения в эфире, топ донатеров и цель сбора.</p>
             <p><a href="mobile/">Android / iPhone</a></p>
+          </article>
+          <article id="module-battle-overlay" class="card module">
+            <header class="module__head">
+              <h3>Battle Overlay</h3>
+
+            </header>
+            <video class="module__video" width="900" height="380" controls muted playsinline loop preload="none"
+                   aria-label="Battle Overlay" aria-describedby="battle-description" poster="assets/promo/battle-overlay-v28.jpg">
+              <source media="(max-width: 640px)" src="assets/promo/battle-overlay-v28-mobile.mp4" type="video/mp4">
+              <source src="assets/promo/battle-overlay-v28-web.mp4" type="video/mp4">
+            </video>
+            <p id="battle-description">Эффекты баттла запускаются по событиям TikTok или назначенной клавише.</p>
           </article>
         </div>
       </div>

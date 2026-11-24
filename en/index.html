@@ -28,8 +28,8 @@
   <script type="module" src="../assets/js/language.js"></script>
   <link rel="stylesheet" href="../assets/css/studio-pages.css">
   <script defer src="../assets/js/ocean.js"></script>
-  <link rel="stylesheet" href="../assets/css/module-preview.css">
-  <script defer src="../assets/js/module-preview.js"></script>
+  <link rel="stylesheet" href="../assets/css/module-preview.css?v=2">
+  <script defer src="../assets/js/module-preview.js?v=2"></script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -163,15 +163,6 @@
             </header>
             <p>A gift spawns a fighter carrying the viewer's name; health and team depend on the gift. Blue vs red team battles with rounds and overtime.</p>
           </article>
-          <article id="module-battle-overlay" class="card module">
-            <header class="module__head">
-              <h3>Battle Overlay</h3>
-
-            </header>
-            <video class="module__video" width="900" height="380" controls playsinline loop preload="none"
-                   aria-label="Battle Overlay" aria-describedby="battle-description" poster="../assets/promo/battle-overlay-v28.jpg" src="../assets/promo/battle-overlay-v28.mp4"></video>
-            <p id="battle-description">Battle effects play in response to TikTok events or a key you assign.</p>
-          </article>
           <article class="card module">
             <header class="module__head">
               <h3>TikDonate</h3>
@@ -179,6 +170,18 @@
             </header>
             <p>Donations via Kaspi / Halyk / Freedom transfers and DonationAlerts: on-stream alerts, top donors and a donation goal.</p>
             <p><a href="mobile/">Android / iPhone</a></p>
+          </article>
+          <article id="module-battle-overlay" class="card module">
+            <header class="module__head">
+              <h3>Battle Overlay</h3>
+
+            </header>
+            <video class="module__video" width="900" height="380" controls muted playsinline loop preload="none"
+                   aria-label="Battle Overlay" aria-describedby="battle-description" poster="../assets/promo/battle-overlay-v28.jpg">
+              <source media="(max-width: 640px)" src="../assets/promo/battle-overlay-v28-mobile.mp4" type="video/mp4">
+              <source src="../assets/promo/battle-overlay-v28-web.mp4" type="video/mp4">
+            </video>
+            <p id="battle-description">Battle effects play in response to TikTok events or a key you assign.</p>
           </article>
         </div>
       </div>

@@ -25,8 +25,11 @@ test("Battle Overlay plays the wide film in its module with the module descripti
     assert.match(card, /<video[^>]*width="900" height="380"[^>]*preload="none"/);
     assert.match(card, /aria-describedby="battle-description"/);
     assert.match(card, /<p id="battle-description">[^<]+<\/p>/);
-    const video = card.match(/src="([^"]+\.mp4)"/)[1];
-    assert.equal(resolve(SITE, dirname(page), video), join(SITE, "assets/promo/battle-overlay-v28.mp4"));
+    assert.match(card, /controls muted playsinline/);
+    const sources = [...card.matchAll(/<source [^>]*src="([^"]+)"/g)].map(m => resolve(SITE, dirname(page), m[1]));
+    assert.deepEqual(sources, ["mobile", "web"].map(variant => join(SITE, "assets/promo", "battle-overlay-v28-" + variant + ".mp4")));
+    assert.match(card, /<source media="\(max-width: 640px\)"/);
+    assert.ok(sources.every(path => existsSync(path)));
   }
 });
 
@@ -141,7 +144,7 @@ test("every internal link and anchor resolves", () => {
     for (const href of hrefs(read(page))) {
       if (/^(https?:|mailto:)/.test(href)) continue;
       const [path, fragment] = href.split("#");
-      const file = target(page, path);
+      const file = target(page, path.split("?")[0]);
       assert.ok(existsSync(file), `${page}: ${href} → ${file}`);
       if (fragment) assert.ok(readFileSync(file, "utf8").includes(`id="${fragment}"`), `${page}: #${fragment} in ${file}`);
     }

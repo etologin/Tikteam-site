@@ -38,6 +38,32 @@
     position();
   }
   function hide() { active = null; pinned = false; tip.hidden = true; }
+  function enableVideoPreview(card, video) {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let hoverPlayback = false;
+    card.addEventListener('pointerenter', event => {
+      if (event.pointerType !== 'mouse' || !video.paused || document.hidden || reduceMotion.matches) return;
+      hoverPlayback = true;
+      video.play().catch(() => { /* The native play button stays available. */ });
+    });
+    card.addEventListener('pointerleave', () => {
+      if (hoverPlayback && !document.fullscreenElement) video.pause();
+      hoverPlayback = false;
+    });
+    if ('IntersectionObserver' in window) {
+      const warm = new IntersectionObserver(entries => {
+        if (!entries.some(entry => entry.isIntersecting)) return;
+        if (!navigator.connection?.saveData) video.preload = 'auto';
+        warm.disconnect();
+      }, {rootMargin: '200px 0px'});
+      warm.observe(video);
+      const visibility = new IntersectionObserver(entries => {
+        if (!entries[0].isIntersecting && !document.fullscreenElement) video.pause();
+      });
+      visibility.observe(card);
+    }
+    document.addEventListener('visibilitychange', () => { if (document.hidden) video.pause(); });
+  }
   function attach(entry) {
     const {anchor,button} = entry;
     anchor.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') show(entry); });
@@ -61,6 +87,8 @@
     name.parentElement.append(button);
     const entry = {anchor:card,button,name,description};
     attach(entry);
+    const video = card.querySelector('.module__video');
+    if (video) enableVideoPreview(card, video);
     button.addEventListener('click', () => {
       if (pinned && active === entry) hide();
       else { show(entry); pinned = true; }
