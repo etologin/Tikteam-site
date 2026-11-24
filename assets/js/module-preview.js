@@ -95,9 +95,9 @@
     document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); });
   }
   function attach(entry) {
-    const {anchor,button} = entry;
-    anchor.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') show(entry); });
-    anchor.addEventListener('pointerleave', () => { if (active === entry && !pinned) hide(); });
+    const {button} = entry;
+    button.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') show(entry); });
+    button.addEventListener('pointerleave', () => { if (active === entry && !pinned) hide(); });
     button.addEventListener('focus', () => show(entry));
     button.addEventListener('blur', () => { if (active === entry) hide(); });
     new MutationObserver(() => { if (active === entry) show(entry); })

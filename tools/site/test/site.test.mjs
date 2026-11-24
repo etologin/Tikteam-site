@@ -19,18 +19,22 @@ const PAGES = [
 const read = (page) => readFileSync(join(SITE, page), "utf8").replace(/\r\n/g, "\n");
 const hrefs = (html) => [...html.matchAll(/\s(?:href|src)="([^"]+)"/g)].map((m) => m[1]);
 
-test("both module cards use their own wide covers, responsive films and localized descriptions", () => {
+test("module previews retain their artwork, proportions and on-demand descriptions", () => {
   for (const page of ["index.html", "en/index.html"]) {
-    for (const [id, description] of [["battle-overlay", "battle-description"], ["tikdonate", "donate-description"]]) {
+    const previews = [
+      ["avatar-overlay", "avatar-description", "v33", 800, 420], ["battle-overlay", "battle-description", "v32", 800, 420],
+      ["tikdonate", "donate-description", "v32", 800, 420], ["dead-as-disco", "disco-description", "v5", 960, 540],
+    ];
+    for (const [id, description, version, width, height] of previews) {
       const card = read(page).split('<article id="module-' + id + '"')[1].split("</article>")[0];
-      assert.match(card, /<video[^>]*width="800" height="420" muted playsinline loop preload="none"/);
+      assert.ok(card.includes(`width="${width}" height="${height}" muted playsinline loop preload="none"`));
       assert.doesNotMatch(card, /<video\b[^>]*\bcontrols\b/);
       assert.ok(card.includes('aria-describedby="' + description + '"'));
-      assert.ok(card.includes('<p id="' + description + '">'));
+      assert.ok(card.includes('<p class="sr-only" id="' + description + '">'));
       const cover = card.match(/poster="([^"]+)"/)[1];
-      assert.equal(resolve(SITE, dirname(page), cover), join(SITE, "assets/promo", id + "-v32.webp"));
+      assert.equal(resolve(SITE, dirname(page), cover), join(SITE, "assets/promo", id + "-" + version + ".webp"));
       const sources = [...card.matchAll(/<source [^>]*src="([^"]+)"/g)].map(m => resolve(SITE, dirname(page), m[1]));
-      assert.deepEqual(sources, ["mobile", "web"].map(variant => join(SITE, "assets/promo", id + "-v32-" + variant + ".mp4")));
+      assert.deepEqual(sources, ["mobile", "web"].map(variant => join(SITE, "assets/promo", id + "-" + version + "-" + variant + ".mp4")));
       assert.match(card, /<source media="\(max-width: 640px\)"/);
       assert.ok(sources.every(path => existsSync(path)));
     }

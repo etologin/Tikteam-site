@@ -28,8 +28,8 @@
   <script type="module" src="../assets/js/language.js"></script>
   <link rel="stylesheet" href="../assets/css/studio-pages.css">
   <script defer src="../assets/js/ocean.js"></script>
-  <link rel="stylesheet" href="../assets/css/module-preview.css?v=34">
-  <script defer src="../assets/js/module-preview.js?v=34"></script>
+  <link rel="stylesheet" href="../assets/css/module-preview.css?v=35">
+  <script defer src="../assets/js/module-preview.js?v=35"></script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -142,26 +142,19 @@
       <div class="wrap">
         <h2>Modules</h2>
         <div class="modules">
-          <article class="card module">
+          <article id="module-avatar-overlay" class="card module module--preview">
             <header class="module__head">
               <h3>Avatar Overlay</h3>
 
             </header>
-            <p>A gift plays a video with the viewer’s avatar and name. In LIVE Studio, capture the TikTeam overlays window.</p>
-          </article>
-          <article class="card module">
-            <header class="module__head">
-              <h3>Dead as Disco</h3>
-              <span class="status status--test">In testing</span>
-            </header>
-            <p>Viewers enter the arena as enemies, allies or bosses, with their name and avatar overhead. The mod installs from the app, and the game files it changes are backed up first.</p>
-          </article>
-          <article class="card module">
-            <header class="module__head">
-              <h3>Streets of Rage 4</h3>
-              <span class="status status--test">In testing</span>
-            </header>
-            <p>A gift spawns a fighter carrying the viewer's name; health and team depend on the gift. Blue vs red team battles with rounds and overtime.</p>
+            <div class="module__player">
+              <video class="module__video" width="800" height="420" muted playsinline loop preload="none"
+                     aria-label="Avatar Overlay" aria-describedby="avatar-description" poster="../assets/promo/avatar-overlay-v33.webp">
+                <source media="(max-width: 640px)" src="../assets/promo/avatar-overlay-v33-mobile.mp4" type="video/mp4">
+                <source src="../assets/promo/avatar-overlay-v33-web.mp4" type="video/mp4">
+              </video>
+            </div>
+            <p class="sr-only" id="avatar-description">A gift plays a video with the viewer’s avatar and name. In LIVE Studio, capture the TikTeam overlays window.</p>
           </article>
           <article id="module-battle-overlay" class="card module module--preview">
             <header class="module__head">
@@ -175,7 +168,7 @@
                 <source src="../assets/promo/battle-overlay-v32-web.mp4" type="video/mp4">
               </video>
             </div>
-            <p id="battle-description">Battle effects play in response to TikTok events or a key you assign.</p>
+            <p class="sr-only" id="battle-description">Battle effects play in response to TikTok events or a key you assign.</p>
           </article>
           <article id="module-tikdonate" class="card module module--preview">
             <header class="module__head">
@@ -189,8 +182,29 @@
                 <source src="../assets/promo/tikdonate-v32-web.mp4" type="video/mp4">
               </video>
             </div>
-            <p id="donate-description">Donations via Kaspi / Halyk / Freedom transfers and DonationAlerts: on-stream alerts, top donors and a donation goal.</p>
-            <p><a href="mobile/">Android / iPhone</a></p>
+            <p class="sr-only" id="donate-description">Donations via Kaspi / Halyk / Freedom transfers and DonationAlerts: on-stream alerts, top donors and a donation goal.</p>
+            <a class="btn btn--small module__mobile" href="mobile/">Android / iPhone</a>
+          </article>
+          <article id="module-dead-as-disco" class="card module module--preview">
+            <header class="module__head">
+              <h3>Dead as Disco</h3>
+              <span class="status status--test">In testing</span>
+            </header>
+            <div class="module__player">
+              <video class="module__video" width="960" height="540" muted playsinline loop preload="none"
+                     aria-label="Dead as Disco" aria-describedby="disco-description" poster="../assets/promo/dead-as-disco-v5.webp">
+                <source media="(max-width: 640px)" src="../assets/promo/dead-as-disco-v5-mobile.mp4" type="video/mp4">
+                <source src="../assets/promo/dead-as-disco-v5-web.mp4" type="video/mp4">
+              </video>
+            </div>
+            <p class="sr-only" id="disco-description">Viewers enter the arena as enemies, allies or bosses, with their name and avatar overhead. The mod installs from the app, and the game files it changes are backed up first.</p>
+          </article>
+          <article class="card module">
+            <header class="module__head">
+              <h3>Streets of Rage 4</h3>
+              <span class="status status--test">In testing</span>
+            </header>
+            <p class="sr-only">A gift spawns a fighter carrying the viewer's name; health and team depend on the gift. Blue vs red team battles with rounds and overtime.</p>
           </article>
         </div>
       </div>
