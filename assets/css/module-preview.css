@@ -1,0 +1,16 @@
+.module__video { display: block; width: 100%; height: auto; aspect-ratio: 45 / 19; background: #10131d; border-radius: 8px; }
+.module__info {
+  display: grid; place-items: center; flex: none; margin-inline-start: auto;
+  width: 32px; height: 32px; padding: 0; cursor: pointer;
+  border: 1px solid #495775; border-radius: 7px; background: #1a2639; color: #dce6f5; font: bold 16px/1 system-ui,sans-serif;
+}
+.module__info:hover, .module__info:focus-visible { background: #334664; color: white; }
+.module__tip {
+  position: fixed; z-index: 90; pointer-events: none; box-sizing: border-box;
+  width: min(280px,calc(100vw - 16px)); padding: 12px 15px;
+  background: #26364a; color: #eef4ff; border: 1px solid #526681; border-radius: 8px;
+  box-shadow: 0 8px 25px #080d1b50; font-size: .94rem; line-height: 1.45;
+}
+.module__tip[hidden] { display: none; }
+.module__tip strong { display: block; font-size: 1.04rem; }
+.module__tip p { margin: 5px 0 0; color: #dee7f5; }

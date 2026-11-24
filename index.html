@@ -28,6 +28,8 @@
   <script type="module" src="assets/js/language.js"></script>
   <link rel="stylesheet" href="assets/css/studio-pages.css">
   <script defer src="assets/js/ocean.js"></script>
+  <link rel="stylesheet" href="assets/css/module-preview.css">
+  <script defer src="assets/js/module-preview.js"></script>
 </head>
 <body>
   <a class="skip" href="#main">К содержанию</a>
@@ -161,12 +163,14 @@
             </header>
             <p>Подарок выпускает бойца с ником зрителя; здоровье и сторона зависят от подарка. Командный бой синих против красных с раундами и продлением.</p>
           </article>
-          <article class="card module">
+          <article id="module-battle-overlay" class="card module">
             <header class="module__head">
               <h3>Battle Overlay</h3>
 
             </header>
-            <p>Эффекты баттла запускаются по событиям TikTok или назначенной клавише.</p>
+            <video class="module__video" width="900" height="380" controls playsinline loop preload="none"
+                   aria-label="Battle Overlay" aria-describedby="battle-description" poster="assets/promo/battle-overlay-v28.jpg" src="assets/promo/battle-overlay-v28.mp4"></video>
+            <p id="battle-description">Эффекты баттла запускаются по событиям TikTok или назначенной клавише.</p>
           </article>
           <article class="card module">
             <header class="module__head">

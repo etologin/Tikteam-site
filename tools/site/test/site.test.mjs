@@ -19,6 +19,17 @@ const PAGES = [
 const read = (page) => readFileSync(join(SITE, page), "utf8").replace(/\r\n/g, "\n");
 const hrefs = (html) => [...html.matchAll(/\s(?:href|src)="([^"]+)"/g)].map((m) => m[1]);
 
+test("Battle Overlay plays the wide film in its module with the module description", () => {
+  for (const page of ["index.html", "en/index.html"]) {
+    const card = read(page).match(/<article id="module-battle-overlay"[\s\S]*?<\/article>/)[0];
+    assert.match(card, /<video[^>]*width="900" height="380"[^>]*preload="none"/);
+    assert.match(card, /aria-describedby="battle-description"/);
+    assert.match(card, /<p id="battle-description">[^<]+<\/p>/);
+    const video = card.match(/src="([^"]+\.mp4)"/)[1];
+    assert.equal(resolve(SITE, dirname(page), video), join(SITE, "assets/promo/battle-overlay-v28.mp4"));
+  }
+});
+
 test("every page links the account area in the header, the mobile menu and the footer", () => {
   for (const [page, lang] of PAGES) {
     const html = read(page);
