@@ -35,8 +35,12 @@ test("module previews retain their artwork, proportions and on-demand descriptio
       const cover = card.match(/poster="([^"]+)"/)[1];
       assert.equal(resolve(SITE, dirname(page), cover), join(SITE, "assets/promo", id + "-" + version + (["dead-as-disco", "sor4"].includes(id) && page.startsWith("en/") ? "-en" : "") + ".webp"));
       const sources = [...card.matchAll(/<source [^>]*src="([^"]+)"/g)].map(m => resolve(SITE, dirname(page), m[1]));
-      assert.deepEqual(sources, ["mobile", "web"].map(variant => join(SITE, "assets/promo", id + "-" + (variant === "web" ? webVersion : version) + "-" + variant + ".mp4")));
-      assert.match(card, /<source media="\(max-width: 640px\)"/);
+      if (id === "battle-overlay") {
+        assert.deepEqual(sources, [join(SITE, "assets/promo", "battle-overlay-v32-original.mp4")]);
+      } else {
+        assert.deepEqual(sources, ["mobile", "web"].map(variant => join(SITE, "assets/promo", id + "-" + (variant === "web" ? webVersion : version) + "-" + variant + ".mp4")));
+        assert.match(card, /<source media="\(max-width: 640px\)"/);
+      }
       assert.ok(sources.every(path => existsSync(path)));
     }
   }

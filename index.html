@@ -30,6 +30,8 @@
   <script defer src="assets/js/ocean.js"></script>
   <link rel="stylesheet" href="assets/css/module-preview.css?v=41">
   <script defer src="assets/js/module-preview.js?v=41"></script>
+  <link rel="stylesheet" href="assets/css/home-reels.css?v=3">
+  <script defer src="assets/js/home-reels.js?v=2"></script>
 </head>
 <body>
   <a class="skip" href="#main">К содержанию</a>
@@ -88,11 +90,23 @@
           </div>
         </div>
 
-        <div class="app-preview">
-          <video class="home-promo" controls playsinline preload="none" width="1920" height="1080" poster="assets/img/tikteam-gallery.png" aria-label="Смотреть ролик TikTeam">
-            <source src="assets/promo/tikteam-promo-v35.mp4" type="video/mp4">
-            <a href="assets/promo/tikteam-promo-v35.mp4">Смотреть ролик TikTeam</a>
-          </video>
+        <div class="hero-reels" role="region" aria-label="Ролики TikTeam">
+          <div class="hero-reels__viewport">
+            <div class="hero-reels__slide" data-slot="0" aria-hidden="false">
+              <video src="assets/promo/home-reel-1.mp4?v=2" poster="assets/promo/home-reel-1.webp" autoplay muted playsinline disablepictureinpicture disableremoteplayback preload="metadata" width="576" height="1024" aria-label="TikTeam, 1 / 4"></video>
+            </div>
+            <div class="hero-reels__slide" data-slot="1" aria-hidden="true">
+              <video data-src="assets/promo/home-reel-2.mp4?v=2" poster="assets/promo/home-reel-2.webp" muted playsinline disablepictureinpicture disableremoteplayback preload="none" width="576" height="1024" aria-label="Battle Overlay, 2 / 4"></video>
+            </div>
+            <div class="hero-reels__slide" data-slot="2" aria-hidden="true">
+              <video data-src="assets/promo/home-reel-3.mp4?v=2" poster="assets/promo/home-reel-3.webp" muted playsinline disablepictureinpicture disableremoteplayback preload="none" width="576" height="1024" aria-label="Avatar Overlay, 3 / 4"></video>
+            </div>
+            <div class="hero-reels__slide" data-slot="-1" aria-hidden="true">
+              <video data-src="assets/promo/home-reel-4.mp4?v=2" poster="assets/promo/home-reel-4.webp" muted playsinline disablepictureinpicture disableremoteplayback preload="none" width="576" height="1024" aria-label="TikDonate, 4 / 4"></video>
+            </div>
+          </div>
+          <button class="hero-reels__button hero-reels__arrow hero-reels__arrow--prev" type="button" data-prev aria-label="Предыдущий ролик"><svg viewBox="0 0 32 64" aria-hidden="true"><path d="m22 12-14 20 14 20"/></svg></button>
+          <button class="hero-reels__button hero-reels__arrow hero-reels__arrow--next" type="button" data-next aria-label="Следующий ролик"><svg viewBox="0 0 32 64" aria-hidden="true"><path d="m10 12 14 20-14 20"/></svg></button>
         </div>
       </div>
     </section>
@@ -167,8 +181,7 @@
             <div class="module__player">
               <video class="module__video" width="800" height="420" muted playsinline loop preload="none"
                      aria-label="Battle Overlay" aria-describedby="battle-description" poster="assets/promo/battle-overlay-v32.webp">
-                <source media="(max-width: 640px)" src="assets/promo/battle-overlay-v32-mobile.mp4" type="video/mp4">
-                <source src="assets/promo/battle-overlay-v32-web.mp4" type="video/mp4">
+                <source src="assets/promo/battle-overlay-v32-original.mp4" type="video/mp4">
               </video>
             </div>
             <p class="sr-only" id="battle-description">Эффекты баттла запускаются по событиям TikTok или назначенной клавише.</p>
