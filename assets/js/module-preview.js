@@ -52,15 +52,19 @@
   let watching = null;
   let leaveTimer;
   let manual = false;
+  let cancelReveal;
 
   function dismissPreview(restoreFocus = false) {
     clearTimeout(leaveTimer);
     if (!watching) return;
     const { toggle, video, card } = watching;
     watching = null;
+    cancelReveal?.();
+    cancelReveal = undefined;
     manual = false;
     if (document.fullscreenElement === preview) document.exitFullscreen().catch(() => {});
     preview.hidden = true;
+    preview.classList.remove('demo-float--ready');
     card.classList.remove('module--watching');
     toggle.setAttribute('aria-expanded', 'false');
     video.pause();
@@ -106,6 +110,17 @@
       preview.prepend(entry.video);
       preview.hidden = false;
       placePreview();
+      const video = entry.video;
+      const reveal = () => {
+        if (watching === entry) preview.classList.add('demo-float--ready');
+      };
+      if (typeof video.requestVideoFrameCallback === 'function') {
+        const frame = video.requestVideoFrameCallback(reveal);
+        cancelReveal = () => video.cancelVideoFrameCallback(frame);
+      } else {
+        video.addEventListener('playing', reveal, {once: true});
+        cancelReveal = () => video.removeEventListener('playing', reveal);
+      }
       entry.video.play().catch(error => {
         // A new hover can cancel an earlier play() on the same video.
         if (watching === entry && error.name !== 'AbortError') dismissPreview();
@@ -127,6 +142,7 @@
     const cover = new Image();
     cover.alt = '';
     cover.src = video.poster;
+    video.removeAttribute('poster');
     toggle.append(cover);
     video.replaceWith(toggle);
     const entry = {card, toggle, video};

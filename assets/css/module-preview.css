@@ -24,6 +24,7 @@
   box-shadow: 0 0 0 1px #707e9e, 0 16px 50px #020715a8;
 }
 .demo-float:fullscreen { inset: 0; border-radius: 0; }
+.demo-float:not(.demo-float--ready) { opacity: 0; pointer-events: none; }
 .demo-float button {
   position: absolute; top: 8px; right: 8px; width: 40px; height: 40px;
   border: 1px solid #64748a; border-radius: 50%; background: #101724ed;
