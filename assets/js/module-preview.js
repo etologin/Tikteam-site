@@ -46,7 +46,7 @@
   const close = document.createElement('button');
   close.type = 'button';
   close.textContent = '×';
-  close.setAttribute('aria-label', document.documentElement.lang === 'en' ? 'Close' : 'Закрыть');
+  close.setAttribute('aria-label', location.pathname.startsWith('/en/') ? 'Close' : 'Закрыть');
   preview.append(close);
   document.body.append(preview);
   let watching = null;

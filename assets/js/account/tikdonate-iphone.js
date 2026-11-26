@@ -1,10 +1,20 @@
 import { MODE, API_BASE, createTransport } from "./config.js";
 import { createClient } from "./api.js";
+import { localizationReady, pageLanguage, translateCopy } from "../language.js";
 
 const route = "/tikdonate/iphone";
 const byId = id => document.getElementById(id);
-const en = document.documentElement.lang === "en";
-const say = (ru, english) => { byId("state").textContent = en ? english : ru; };
+let message;
+function renderStatus() {
+  if (!message) return;
+  byId("state").textContent = pageLanguage() === "en" ? message.english : translateCopy(message.ru);
+}
+function say(ru, english) {
+  message = { ru, english };
+  renderStatus();
+}
+document.addEventListener("tikteam-language-changed", renderStatus);
+localizationReady.then(renderStatus);
 const ids = ["make-qr", "unlink"];
 let client;
 let generation = 0;
