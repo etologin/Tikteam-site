@@ -35,14 +35,10 @@ test("module previews retain their artwork, proportions and on-demand descriptio
       const cover = card.match(/poster="([^"]+)"/)[1];
       assert.equal(resolve(SITE, dirname(page), cover), join(SITE, "assets/promo", id + "-" + version + (["dead-as-disco", "sor4"].includes(id) && page.startsWith("en/") ? "-en" : "") + ".webp"));
       const sources = [...card.matchAll(/<source [^>]*src="([^"]+)"/g)].map(m => resolve(SITE, dirname(page), m[1]));
-      if (id === "avatar-overlay" || id === "battle-overlay") {
-        const file = id === "avatar-overlay" ? "avatar-overlay-v34-web.mp4" : "battle-overlay-v32-original.mp4";
-        assert.deepEqual(sources, [join(SITE, "assets/promo", file)]);
-        assert.doesNotMatch(card, /<source\b[^>]*\bmedia=/);
-      } else {
-        assert.deepEqual(sources, ["mobile", "web"].map(variant => join(SITE, "assets/promo", id + "-" + (variant === "web" ? webVersion : version) + "-" + variant + ".mp4")));
-        assert.match(card, /<source media="\(max-width: 640px\)"/);
-      }
+      const variant = id === "battle-overlay" ? "original" : "web";
+      const file = id + "-" + webVersion + "-" + variant + ".mp4";
+      assert.deepEqual(sources, [join(SITE, "assets/promo", file)]);
+      assert.doesNotMatch(card, /<source\b[^>]*\bmedia=/);
       assert.ok(sources.every(path => existsSync(path)));
     }
   }
