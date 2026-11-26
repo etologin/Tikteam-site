@@ -1,0 +1,31 @@
+name: Retire superseded TikTeam Windows download
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/retire-client-1.2.45.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  retire:
+    if: github.repository == 'etologin/Tikteam-site' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: etologin/Tikteam-site
+    steps:
+      - name: Check the replacement and archive the previous release
+        shell: bash
+        run: |
+          set -euo pipefail
+          next=client-v1.2.46
+          previous=client-v1.2.45
+          gh api "repos/$GH_REPO/releases/latest" | jq -e --arg tag "$next" '.tag_name == $tag and any(.assets[]; .name == "TikTeam.Setup.exe" and .digest == "sha256:d2ba599bef8c6b298cad32b3124a64d881e7890396bae29de1d5932a51271478")'
+          for attempt in $(seq 1 50); do
+            if curl --fail --silent --show-error -o page.html "https://tikteam.live/?release=$next" && grep -Fq "/releases/download/$next/TikTeam.Setup.exe" page.html; then break; fi
+            sleep 8
+          done
+          grep -Fq "/releases/download/$next/TikTeam.Setup.exe" page.html
+          previous_id=$(gh api "repos/$GH_REPO/releases/tags/$previous" --jq .id)
+          gh api --method PATCH "repos/$GH_REPO/releases/$previous_id" -F draft=true | jq -e --arg tag "$previous" '.draft and .tag_name == $tag'
