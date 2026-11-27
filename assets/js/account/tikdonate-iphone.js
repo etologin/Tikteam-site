@@ -1,6 +1,7 @@
 import { MODE, API_BASE, createTransport } from "./config.js";
 import { createClient } from "./api.js";
 import { localizationReady, pageLanguage, translateCopy } from "../language.js";
+import { donationHistory } from "./tikdonate-history.js";
 
 const route = "/tikdonate/iphone";
 const byId = id => document.getElementById(id);
@@ -20,6 +21,7 @@ let client;
 let generation = 0;
 let expiryTimer;
 let pending = false;
+const history = donationHistory(() => client, document.documentElement.lang === "en");
 
 function clearQr() {
   clearTimeout(expiryTimer);
@@ -32,6 +34,7 @@ function clearSecrets() {
   byId("key").value = "";
 }
 function showSignIn() {
+  history.clear();
   clearSecrets();
   byId("sign-in").hidden = false;
   byId("setup").hidden = byId("unlink").hidden = true;
@@ -53,6 +56,7 @@ function showError(error) {
 
 async function load() {
   const current = ++generation;
+  history.clear();
   clearSecrets();
   byId("setup").hidden = byId("unlink").hidden = byId("sign-in").hidden = true;
   if (!client) {
@@ -63,6 +67,8 @@ async function load() {
   try {
     if (!(await client.bootstrap()).authenticated) return showSignIn();
     if ((await client.get("/account")).body?.emailConfirmed !== true) return showSignIn();
+    if (current !== generation) return;
+    history.enable();
     const { body } = await client.get(route);
     if (current !== generation) return;
     if (body?.phoneLinked) {
@@ -126,6 +132,6 @@ if (MODE === "real") client = createClient({ transport: createTransport(), base:
 byId("make-qr").addEventListener("click", () => change("connect"));
 byId("unlink").addEventListener("click", () => change("unlink"));
 byId("copy-key").addEventListener("click", () => copy(byId("key").value, byId("key")));
-addEventListener("pagehide", () => { generation++; clearSecrets(); client?.forget(); });
+addEventListener("pagehide", () => { generation++; history.clear(); clearSecrets(); client?.forget(); });
 addEventListener("pageshow", event => { if (event.persisted) load(); });
 load();

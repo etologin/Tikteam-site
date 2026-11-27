@@ -7,8 +7,8 @@
   <title>TikDonate на iPhone · TikTeam</title>
   <link rel="stylesheet" href="/assets/css/site.css">
   <link rel="stylesheet" href="/assets/css/account.css">
-  <link rel="stylesheet" href="/assets/css/iphone-account.css">
-  <script type="module" src="/assets/js/account/tikdonate-iphone.js?account-pair=1"></script>
+  <link rel="stylesheet" href="/assets/css/iphone-account.css?v=2">
+  <script type="module" src="/assets/js/account/tikdonate-iphone.js?v=2"></script>
   <link rel="stylesheet" href="../../assets/css/studio-pages.css">
   <script defer src="../../assets/js/ocean.js"></script>
 </head>
@@ -44,6 +44,17 @@
       <button class="btn btn--ghost" type="button" id="unlink" hidden>Отвязать iPhone</button>
     </div>
     <p><a href="https://tikteam.live/iphone/">Инструкция подключения</a></p>
+    <section class="card" id="donation-history" aria-labelledby="history-title" hidden>
+      <h2 id="history-title">История и статистика</h2>
+      <button class="btn btn--ghost" type="button" id="history-open">Открыть историю</button>
+      <p id="history-summary" role="status" aria-live="polite"></p>
+      <ol id="history-list" class="donation-history-list"></ol>
+      <div id="history-nav" hidden>
+        <button type="button" class="btn btn--ghost" id="history-prev">Назад</button>
+        <button type="button" class="btn btn--ghost" id="history-next">Далее</button>
+        <button type="button" class="btn btn--ghost" id="history-refresh">Обновить</button>
+      </div>
+    </section>
   </main>
 </body>
 </html>

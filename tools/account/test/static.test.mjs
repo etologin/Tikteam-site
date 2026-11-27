@@ -12,7 +12,7 @@ const PAGES = ["account/index.html", "account/recovery/index.html", "en/account/
 const shipped = readdirSync(JS_DIR).filter((f) => f.endsWith(".js"));
 
 test("committed account scripts are the production set only", () => {
-  assert.deepEqual(shipped.sort(), ["account-app.js", "api.js", "config.js", "dashboard.js", "dom.js", "guard.js", "i18n.js", "recovery-app.js", "referral-card.js", "referrals.js", "tikdonate-iphone.js", "urls.js"]);
+  assert.deepEqual(shipped.sort(), ["account-app.js", "api.js", "config.js", "dashboard.js", "dom.js", "guard.js", "i18n.js", "recovery-app.js", "referral-card.js", "referrals.js", "tikdonate-history.js", "tikdonate-iphone.js", "urls.js"]);
   const config = readFileSync(join(JS_DIR, "config.js"), "utf8");
   assert.match(config, /export const MODE = "disabled";/, "the committed site is in disabled mode");
   assert.match(config, /export const API_ORIGIN = "";/, "no API origin in the committed site");
